@@ -21,7 +21,7 @@ class DummySeeder extends Seeder
             'type' => 'Utama',
             'is_selected' => true,
             'bs_id' => 1,
-            'status' => 'Belum Dicacah'
+            'status_id' => 1,
         ]);
 
         Sample::create([
@@ -30,7 +30,7 @@ class DummySeeder extends Seeder
             'type' => 'Utama',
             'is_selected' => true,
             'bs_id' => 1,
-            'status' => 'Belum Dicacah'
+            'status_id' => 1,
         ]);
 
         Sample::create([
@@ -39,7 +39,7 @@ class DummySeeder extends Seeder
             'type' => 'Utama',
             'is_selected' => true,
             'bs_id' => 1,
-            'status' => 'Belum Dicacah'
+            'status_id' => 1,
         ]);
 
         Sample::create([
@@ -48,7 +48,7 @@ class DummySeeder extends Seeder
             'type' => 'Utama',
             'is_selected' => true,
             'bs_id' => 1,
-            'status' => 'Belum Dicacah'
+            'status_id' => 1,
         ]);
 
         Sample::create([
@@ -57,7 +57,7 @@ class DummySeeder extends Seeder
             'type' => 'Utama',
             'is_selected' => true,
             'bs_id' => 1,
-            'status' => 'Belum Dicacah'
+            'status_id' => 1,
         ]);
 
         Sample::create([
@@ -66,7 +66,25 @@ class DummySeeder extends Seeder
             'type' => 'Utama',
             'is_selected' => true,
             'bs_id' => 1,
-            'status' => 'Belum Dicacah'
+            'status_id' => 1,
+        ]);
+
+        Sample::create([
+            'no' => 9,
+            'name' => 'cadangan 1',
+            'type' => 'Cadangan',
+            'is_selected' => false,
+            'bs_id' => 1,
+            'status_id' => 1,
+        ]);
+
+        Sample::create([
+            'no' => 10,
+            'name' => 'cadangan 2',
+            'type' => 'Cadangan',
+            'is_selected' => false,
+            'bs_id' => 1,
+            'status_id' => 1,
         ]);
     }
 }

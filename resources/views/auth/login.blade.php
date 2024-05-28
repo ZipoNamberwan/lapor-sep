@@ -61,7 +61,7 @@
                     <div class="row justify-content-center">
                         <div class="col-xl-5 col-lg-6 col-md-8 px-5">
                             <img src="/assets/img/brand/blue.png" class="logologin">
-                            <h1 class="text-white">Monitoring SEP</h1>
+                            <h1 style="color: #009B4D">Integrasi Survei Ekonomi Pertanian</h1>
                         </div>
                     </div>
                 </div>
@@ -85,7 +85,7 @@
                                         <div class="input-group-prepend">
                                             <span class="input-group-text"><i class="ni ni-circle-08"></i></span>
                                         </div>
-                                        <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" autofocus placeholder="No HP">
+                                        <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" autofocus placeholder="Email">
                                     </div>
                                     @error('email')
                                     <span class="error-feedback" role="alert">

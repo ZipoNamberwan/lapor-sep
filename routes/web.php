@@ -37,6 +37,7 @@ Route::middleware('auth')->group(function () {
     Route::group(['middleware' => ['role:pml|pcl']], function () {
         Route::get('/petugas', [PclController::class, 'index']);
         Route::get('/petugas/create', [PclController::class, 'create']);
+        Route::patch('/petugas/edit/{id}', [PclController::class, 'update']);
     });
 });
 

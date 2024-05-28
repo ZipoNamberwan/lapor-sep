@@ -15,4 +15,14 @@ class Sample extends Model
     {
         return $this->belongsTo(Bs::class, 'bs_id');
     }
+
+    public function status()
+    {
+        return $this->belongsTo(Status::class, 'status_id');
+    }
+
+    public function commodities()
+    {
+        return $this->hasMany(Commodity::class, 'sample_id');
+    }
 }

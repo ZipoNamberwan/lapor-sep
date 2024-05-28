@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Commodity;
+use App\Models\Sample;
+use App\Models\Status;
 use App\Models\Subdistrict;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -33,8 +36,9 @@ class PclController extends Controller
 
         $user = User::find(Auth::user()->id);
 
+        $statuses = Status::all();
         $subdistricts = Subdistrict::where(['regency_id' => $user->regency->id])->get();
-        return view('pcl/select', ['subdistricts' => $subdistricts]);
+        return view('pcl/select', ['subdistricts' => $subdistricts, 'statuses' => $statuses]);
     }
 
     /**
@@ -79,7 +83,28 @@ class PclController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $sample = Sample::find($id);
+        $result = $sample->update([
+            'status_id' => $request->status,
+            'user_id' => Auth::user()->id,
+            'is_selected' => $request->status == 9 || $request->status == 2 || $request->status == 1
+        ]);
+
+        if ($request->commodities != null) {
+            Commodity::where(['sample_id' => $id])->delete();
+
+            foreach ($request->commodities as $c) {
+                Commodity::create([
+                    'code' => $c['id'],
+                    'name' => $c['text'],
+                    'sample_id' => $id,
+                ]);
+            }
+        } else {
+            Commodity::where(['sample_id' => $id])->delete();
+        }
+
+        return $result;
     }
 
     /**

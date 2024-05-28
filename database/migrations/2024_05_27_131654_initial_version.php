@@ -44,6 +44,13 @@ return new class extends Migration
             $table->foreignId('village_id')->constrained('villages');
         });
 
+        Schema::create('statuses', function (Blueprint $table) {
+            $table->id()->autoincrement();
+            $table->string('name');
+            $table->string('code');
+            $table->string('color');
+        });
+
         Schema::create('samples', function (Blueprint $table) {
             $table->id()->autoincrement();
             $table->integer('no');
@@ -51,7 +58,15 @@ return new class extends Migration
             $table->enum('type', ['Utama', 'Cadangan']);
             $table->boolean('is_selected', false);
             $table->foreignId('bs_id')->constrained('bs');
-            $table->enum('status', ['Belum Dicacah', 'Sedang Dicacah', 'Selesai', 'Tidak Ditemukan'])->default('Belum Dicacah');
+            $table->foreignId('user_id')->nullable()->constrained('users');
+            $table->foreignId('status_id')->constrained('statuses')->default(1);
+        });
+
+        Schema::create('commodities', function (Blueprint $table) {
+            $table->id()->autoincrement();
+            $table->string('code');
+            $table->string('name');
+            $table->foreignId('sample_id')->constrained('samples')->default(1);
         });
     }
 

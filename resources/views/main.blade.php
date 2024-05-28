@@ -15,7 +15,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="Start your development with a Dashboard for Bootstrap 4.">
     <meta name="author" content="Creative Tim">
-    <title>Automatic Ubinan Reminder System</title>
+    <title>Integrasi Survei Ekonomi Pertanian</title>
     <!-- Favicon -->
     <link rel="icon" href="/assets/img/brand/favicon.png" type="image/png">
     <!-- Fonts -->
@@ -181,7 +181,7 @@
                                     <div class="input-group-prepend">
                                         <span class="input-group-text"><i class="fas fa-home"></i></span>
                                     </div>
-                                    <input class="form-control" placeholder="Automatic Ubinan Reminder System" disabled type="text">
+                                    <input class="form-control" placeholder="Integrasi Survei Ekonomi Pertanian" disabled type="text">
                                 </div>
                             </div>
                             <button type="button" class="close" data-action="search-close" data-target="#navbar-search-main" aria-label="Close">
@@ -249,7 +249,7 @@
                     <div class="row align-items-center justify-content-lg-between">
                         <div class="col-lg-6">
                             <div class="copyright text-center text-lg-left text-muted">
-                                &copy; 2023 <a href="#" class="font-weight-bold ml-1" target="_blank">BPS Kabupaten Probolinggo</a>
+                                &copy; 2025 <a href="#" class="font-weight-bold ml-1" target="_blank">BPS Provinsi Jawa Timur</a>
                             </div>
                         </div>
                     </div>

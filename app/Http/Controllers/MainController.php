@@ -29,8 +29,14 @@ class MainController extends Controller
     }
     public function getSample($id)
     {
-        $samples = Sample::where('bs_id', $id)->get();
+        $samples = Sample::where('bs_id', $id)->where(function ($query) {
+            $query->where('type', 'Utama')
+                ->orWhere('is_selected', true);
+        })->get();
         foreach ($samples as $sample) {
+            $sample->status_name = $sample->status->name;
+            $sample->color = $sample->status->color;
+            $sample->commodities = $sample->commodities;
             $sample->area = ucwords(strtolower($sample->bs->village->subdistrict->name)) . ', ' .
                 ucwords(strtolower($sample->bs->village->name)) . ', ' .
                 $sample->bs->name;

@@ -1,10 +1,11 @@
 @extends('main')
 
 @section('stylesheet')
-<link rel="stylesheet" href="/assets/vendor/select2/dist/css/select2.min.css">
+<link rel="stylesheet" href="/assets/vendor/select2update/select2.min.css">
 <link rel="stylesheet" href="/assets/vendor/@fortawesome/fontawesome-free/css/fontawesome.min.css" />
 <link rel="stylesheet" href="/assets/css/container.css">
 <link rel="stylesheet" href="/assets/css/text.css">
+<meta name="csrf-token" content="{{ csrf_token() }}">
 
 @endsection
 
@@ -74,44 +75,56 @@
     </div>
 </div>
 
-<div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+<div class="modal fade" id="sampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <div>
-                    <h3 id="modaltitle">Modal title</h3>
-                    <h4 id="modalsubtitle">Modal title</h4>
+                    <h2 id="modaltitle">Modal title</h2>
+                    <h3 id="modalsubtitle">Modal title</h3>
                 </div>
 
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
+            <input type="hidden" id="sample_id" />
             <div class="modal-body pt-0" style="height: auto;">
                 <label class="form-control-label">Status <span class="text-danger">*</span></label>
-                <select id="status" name="status" class="form-control" data-toggle="select" name="status" required>
+                <select id="status" name="status" class="form-control" data-toggle="select" required>
                     <option value="0" disabled selected> -- Pilih Status -- </option>
-                    <option value="Belum Dicacah">Belum Dicacah</option>
-                    <option value="Sedang Dicacah">Sedang Dicacah</option>
-                    <option value="Selesai">Belum Dicacah</option>
-                    <option value="Tidak Ditemukan">Belum Dicacah</option>
+                    @foreach($statuses as $status)
+                    <option value="{{$status->id}}">({{$status->code}}) {{$status->name}}</option>
+                    @endforeach
                 </select>
+                <div id="status_error" style="display: none;" class="text-valid mt-2">
+                    Belum diisi
+                </div>
 
-                <label class="mt-2 form-control-label">Komoditas <span class="text-danger">*</span></label>
+                <div class="mt-3">
+                    <label class="form-control-label">Komoditas <span class="text-danger">*</span></label>
+                </div>
                 <div>
                     <div id="inputContainer">
+                        <div id="tags" class="mb-1 pb-1 d-flex align-items-center flex-wrap"></div>
                         <div class="mb-1 d-flex align-items-center">
-                            <input type="text" name="name" class="form-control mr-1" name="komoditas[]">
-                            <!-- <button class="btn btn-outline-danger btn-sm" type="button" onclick="removeInput(this)"><i class="fas fa-trash-alt"></i></button> -->
+                            <select id="commodityselect" class="commodityselect" name="commodities[]">
+                                <option value="0" disabled selected> -- Tambah Komoditas -- </option>
+                            </select>
                         </div>
                     </div>
-                    <button class="btn btn-outline-primary btn-sm" type="button" onclick="addInput()">Tambah Komoditas</button>
+                    <div id="commodity_error" style="display: none;" class="text-valid mt-2">
+                        Belum diisi
+                    </div>
+                </div>
+                <div>
+                    <p id="loading-save" style="visibility: hidden;" class="text-warning mt-3">Loading...</p>
                 </div>
             </div>
 
-            <div class="modal-footer">
+            <div class="modal-footer pt-0">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-                <button type="button" class="btn btn-primary">Simpan</button>
+                <button onclick="onSave()" type="button" class="btn btn-primary">Simpan</button>
             </div>
         </div>
     </div>
@@ -119,11 +132,27 @@
 @endsection
 
 @section('optionaljs')
+<script src="/assets/vendor/select2update/select2.min.js"></script>
 <script src="/assets/vendor/sweetalert2/dist/sweetalert2.js"></script>
-<script src="/assets/vendor/select2/dist/js/select2.min.js"></script>
 <script src="/assets/vendor/datatables2/datatables.min.js"></script>
 
 <script>
+    var statuses = []
+
+    @foreach($statuses as $status)
+    statuses.push({
+        id: '{{$status->id}}',
+        name: '{{$status->name}}',
+        color: '{{$status->color}}',
+        code: '{{$status->code}}'
+    })
+    @endforeach
+</script>
+
+<script>
+    var kodedata = null
+    var selectedCommodities = []
+
     $(document).ready(function() {
         $('#subdistrict').on('change', function() {
             loadVillage(null, null);
@@ -134,7 +163,162 @@
         $('#bs').on('change', function() {
             loadSample(null);
         });
+
+        $.ajax({
+            url: '/data/kode.json',
+            dataType: 'json',
+            success: function(rsp) {
+                kodedata = rsp
+                initializeSelect(kodedata)
+            }
+        });
     });
+
+    $('.commodityselect').on('change', function(e) {
+
+        var selectedValue = $(this).val();
+        var selectedText = $(this).find(':selected').text();
+
+        var isExist = false
+        selectedCommodities.forEach((comm) => {
+            if (comm.id == selectedValue) {
+                isExist = true
+            }
+        })
+        if (!isExist) {
+            selectedCommodities.push({
+                id: selectedValue,
+                text: selectedText
+            })
+        }
+
+        createTags()
+    });
+
+    function createTags() {
+
+        const tagsContainer = document.getElementById('tags');
+        tagsContainer.innerHTML = ''
+
+        selectedCommodities.forEach(tagData => {
+            const tagElement = document.createElement('div');
+            tagElement.className = 'btn btn-primary btn-sm mt-1';
+            tagElement.innerHTML = `
+                <span class="btn-inner--text">${tagData.text}</span>
+                <span class="ml-1 btn-inner--icon"><i class="fas fa-window-close"></i></span>
+            `
+            tagsContainer.appendChild(tagElement);
+
+            tagElement.addEventListener('click', function() {
+                selectedCommodities = removeCommodities(tagData.id)
+                tagElement.remove()
+            });
+        });
+    }
+
+    function validate() {
+        var commodity_valid = true
+        if (selectedCommodities.length == 0) {
+            if (document.getElementById('status').value == 9) {
+                commodity_valid = false
+                document.getElementById('commodity_error').style.display = 'block'
+            }
+        } else {
+            document.getElementById('commodity_error').style.display = 'none'
+        }
+
+        var status_valid = true
+        if (document.getElementById('status').value == 0 || document.getElementById('status').value == null) {
+            status_valid = false
+            document.getElementById('status_error').style.display = 'block'
+        } else {
+            document.getElementById('status_error').style.display = 'none'
+        }
+
+        return commodity_valid && status_valid
+    }
+
+    function onSave() {
+        document.getElementById('commodity_error').style.display = 'none'
+        document.getElementById('status_error').style.display = 'none'
+
+        if (validate()) {
+            document.getElementById('loading-save').style.visibility = 'visible'
+
+            id = document.getElementById('sample_id').value
+            var updateData = {
+                status: document.getElementById('status').value,
+                commodities: selectedCommodities
+            };
+
+            $.ajax({
+                url: `/petugas/edit/${id}`,
+                type: 'PATCH',
+                data: updateData,
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    loadSample(null)
+                    $('#sampleModal').modal('hide');
+                    document.getElementById('loading-save').style.visibility = 'hidden'
+                },
+                error: function(xhr, status, error) {
+                    document.getElementById('loading-save').style.visibility = 'hidden'
+                }
+            });
+        }
+    }
+
+    function removeCommodities(id) {
+        return selectedCommodities.filter(item => item.id !== id);
+    }
+
+    function initializeSelect(rsp) {
+        $('.commodityselect').select2({
+            data: Object.keys(rsp).map(key => ({
+                id: key,
+                text: rsp[key]
+            })),
+            minimumInputLength: 3,
+            matcher: function(params, data) {
+                if ($.trim(params.term) === '') {
+                    return data;
+                }
+
+                if (typeof data.text === 'undefined' || typeof data.id === 'undefined') {
+                    return null;
+                }
+
+                const searchTerm = params.term.toLowerCase();
+                if (data.text.toLowerCase().indexOf(searchTerm) > -1 || data.id.toLowerCase().indexOf(searchTerm) > -1) {
+                    return data;
+                }
+
+                return null;
+            },
+            templateResult: function(data) {
+                if (data.id == 0) {
+                    return data.text
+                }
+                return $('<span>').text(`(${data.id}) ${data.text}`);
+            },
+            templateSelection: function(data) {
+                return ' -- Tambah Komoditas -- '
+                // if (data.id == 0) {
+                //     return data.text
+                // }
+
+                // return `(${data.id}) ${data.text}`;
+            },
+            language: {
+                inputTooShort: function(args) {
+                    const remainingChars = args.minimum - args.input.length;
+                    return `Ketik minimal ${remainingChars} huruf untuk melakukan pencarian`;
+                }
+            }
+        });
+    }
 
     function loadVillage(subdistrictid = null, selectedvillage = null) {
         let id = $('#subdistrict').val();
@@ -202,7 +386,7 @@
             id = bsid;
         }
         const resultDiv = document.getElementById('samplelist');
-        resultDiv.innerHTML = 'Loading';
+        resultDiv.innerHTML = '<p class="text-warning">Loading<p/>';
 
         $.ajax({
             type: 'GET',
@@ -221,27 +405,38 @@
 
                 response.forEach(item => {
                     const itemDiv = document.createElement('div');
-                    itemDiv.className = 'border p-2 bg-white rounded d-flex justify-content-between align-items-center mb-1';
+                    itemDiv.className = 'border p-2 bg-white rounded d-flex flex-wrap justify-content-between align-items-center mb-1';
                     itemDiv.style = "cursor: pointer;"
 
                     itemDiv.setAttribute('data-toggle', 'modal');
-                    itemDiv.setAttribute('data-target', '#exampleModalCenter');
+                    itemDiv.setAttribute('data-target', '#sampleModal');
 
                     itemDiv.addEventListener('click', function() {
                         updateModal(item)
                     });
 
+                    var changeSample = item.status_id != 9 && item.status_id != 1 && item.status_id != 2 ?
+                        `
+                            <button onclick="showChangeSampleModal(${JSON.stringify(item)})" class="btn btn-outline-success btn-sm">
+                                <span class="btn-inner--icon">
+                                    <i class="fas fa-exchange-alt"></i>
+                                </span>
+                            </button>
+                        ` :
+                        ''
+
                     itemDiv.innerHTML = `
-                        <div>
+                        <div class="mb-1">
                             <h4 class="mb-1">(${item.no}) ${item.name}</h4>
-                            <p class="mb-0"><span class="badge badge-primary">${item.status}</span></p>
+                            <p class="mb-0"><span class="badge badge-${item.color}">${item.status_name}</span></p>
                         </div>
-                        <div>
-                            <a href="" class="btn btn-outline-info btn-sm" role="button" aria-pressed="true" data-toggle="tooltip" data-original-title="Ubah Data">
+                        <div class="d-flex mb-1">
+                            ${changeSample}
+                            <button class="btn btn-outline-info btn-sm">
                                 <span class="btn-inner--icon">
                                     <i class="fas fa-edit"></i>
                                 </span>
-                            </a>
+                            </button>
                         </div>
                     `;
 
@@ -260,30 +455,38 @@
         });
     }
 
+    function showChangeSampleModal(item) {
+        event.stopPropagation()
+        console.log(item)
+    }
+
     function updateModal(sample) {
 
         document.getElementById('modaltitle').innerHTML = sample.name
         document.getElementById('modalsubtitle').innerHTML = sample.area
-    }
-</script>
+        document.getElementById('sample_id').value = sample.id
 
-<script>
-    function addInput() {
-        const container = document.getElementById('inputContainer');
-        const newInput = document.createElement('div');
-        newInput.className = 'mb-1 d-flex align-items-center'
+        document.getElementById('tags').innerHTML = ''
+        selectedCommodities = []
+        sample.commodities.forEach((spl) => {
+            selectedCommodities.push({
+                id: spl.code,
+                text: spl.name
+            })
+        })
 
-        newInput.innerHTML = `
-                <input type="text" name="name" class="form-control mr-1" name="komoditas[]">
-                <button class="btn btn-outline-danger btn-sm" type="button" onclick="removeInput(this)"><i class="fas fa-trash-alt"></i></button>
-        `;
-        container.appendChild(newInput);
-    }
+        createTags()
 
-    function removeInput(button) {
-        const container = document.getElementById('inputContainer');
-        const inputDiv = button.parentNode;
-        container.removeChild(inputDiv);
+        document.getElementById('commodity_error').style.display = 'none'
+        document.getElementById('status_error').style.display = 'none'
+        document.getElementById('commodityselect').value = '0'
+
+        $('#status').empty();
+        $('#status').append(`<option value="0" disabled> --- Pilih Status --- </option>`);
+        statuses.forEach((st) => {
+            var sel = st.id == sample.status_id ? 'selected' : ''
+            $('#status').append(`<option ${sel} value="${st.id}">(${st.code}) ${st.name}</option>`);
+        })
     }
 </script>
 
