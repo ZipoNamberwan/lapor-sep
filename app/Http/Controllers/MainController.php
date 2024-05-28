@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Bs;
+use App\Models\Sample;
+use App\Models\Village;
 use Illuminate\Http\Request;
 
 class MainController extends Controller
@@ -14,6 +17,25 @@ class MainController extends Controller
     public function index()
     {
         return view('home');
+    }
+
+    public function getVillage($id)
+    {
+        return json_encode(Village::where('subdistrict_id', $id)->get());
+    }
+    public function getBs($id)
+    {
+        return json_encode(Bs::where('village_id', $id)->get());
+    }
+    public function getSample($id)
+    {
+        $samples = Sample::where('bs_id', $id)->get();
+        foreach ($samples as $sample) {
+            $sample->area = ucwords(strtolower($sample->bs->village->subdistrict->name)) . ', ' .
+                ucwords(strtolower($sample->bs->village->name)) . ', ' .
+                $sample->bs->name;
+        }
+        return json_encode($samples);
     }
 
     /**

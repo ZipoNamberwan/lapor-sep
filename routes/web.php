@@ -20,11 +20,14 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth')->group(function () {
 
     Route::get('/', [MainController::class, 'index'])->middleware('check.role');
+    Route::get('/desa/{id}', [MainController::class, 'getVillage']);
+    Route::get('/bs/{id}', [MainController::class, 'getBs']);
+    Route::get('/sample/{id}', [MainController::class, 'getSample']);
 
     // Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     // Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     // Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    
+
     Route::group(['middleware' => ['role:adminprov']], function () {
         Route::get('/adminprov', [MainController::class, 'index']);
     });
@@ -33,6 +36,7 @@ Route::middleware('auth')->group(function () {
     });
     Route::group(['middleware' => ['role:pml|pcl']], function () {
         Route::get('/petugas', [PclController::class, 'index']);
+        Route::get('/petugas/create', [PclController::class, 'create']);
     });
 });
 

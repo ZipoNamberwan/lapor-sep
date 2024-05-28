@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Subdistrict;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PclController extends Controller
 {
@@ -23,7 +26,15 @@ class PclController extends Controller
      */
     public function create()
     {
-        //
+
+        if (!Auth::check()) {
+            abort(403);
+        }
+
+        $user = User::find(Auth::user()->id);
+
+        $subdistricts = Subdistrict::where(['regency_id' => $user->regency->id])->get();
+        return view('pcl/select', ['subdistricts' => $subdistricts]);
     }
 
     /**
@@ -56,7 +67,7 @@ class PclController extends Controller
      */
     public function edit($id)
     {
-        //
+        return view('pcl/edit');
     }
 
     /**

@@ -44,12 +44,14 @@ return new class extends Migration
             $table->foreignId('village_id')->constrained('villages');
         });
 
-        Schema::create('sample', function (Blueprint $table) {
+        Schema::create('samples', function (Blueprint $table) {
             $table->id()->autoincrement();
+            $table->integer('no');
             $table->string('name');
             $table->enum('type', ['Utama', 'Cadangan']);
             $table->boolean('is_selected', false);
             $table->foreignId('bs_id')->constrained('bs');
+            $table->enum('status', ['Belum Dicacah', 'Sedang Dicacah', 'Selesai', 'Tidak Ditemukan'])->default('Belum Dicacah');
         });
     }
 
