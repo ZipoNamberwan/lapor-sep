@@ -37,7 +37,7 @@ class MainController extends Controller
         //         ->orWhere('is_selected', true);
         // })->get();
 
-        $samples = Sample::where('bs_id', $id)->get();
+        $samples = Sample::where('bs_id', $id)->orderBy('no')->get();
 
         foreach ($samples as $sample) {
             $sample->status_name = $sample->status->name;

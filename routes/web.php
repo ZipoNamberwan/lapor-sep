@@ -5,6 +5,7 @@ use App\Http\Controllers\AdminKabController;
 use App\Http\Controllers\MainController;
 use App\Http\Controllers\PclController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -26,13 +27,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/bs/{id}', [MainController::class, 'getBs']);
     Route::get('/sample/{id}', [MainController::class, 'getSample']);
     Route::get('/petugas/data', [MainController::class, 'getPetugasData']);
+    Route::get('/report', [ReportController::class, 'index']);
+    Route::get('/report/kab', [ReportController::class, 'reportKab']);
+    Route::get('/report/kec', [ReportController::class, 'reportKec']);
+    Route::get('/report/des', [ReportController::class, 'reportDesa']);
+    Route::get('/report/bs', [ReportController::class, 'reportBs']);
 
     Route::group(['middleware' => ['role:adminprov']], function () {
         Route::get('/adminprov', [MainController::class, 'index']);
     });
     Route::group(['middleware' => ['role:adminkab']], function () {
         Route::get('/adminkab', [AdminKabController::class, 'index']);
-        Route::get('/report', [AdminKabController::class, 'report']);
     });
     Route::group(['middleware' => ['role:pml|pcl']], function () {
         Route::get('/petugas', [PclController::class, 'index']);

@@ -39,8 +39,21 @@
                         <h3 class="mb-0">Report</h3>
                     </div>
                     <!-- Card body -->
-                    <div class="card-body">
-                        
+                    <div class="row">
+                        <div class="col-12" id="row-table">
+                            <div class="table-responsive">
+                                <table class="table" id="datatable-id" width="100%">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th>Identitas Wilayah</th>
+                                            <th>Progres Pencacahan</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -55,4 +68,41 @@
 <script src="/assets/vendor/datatables2/datatables.min.js"></script>
 <script src="/assets/vendor/momentjs/moment-with-locales.js"></script>
 
+<script>
+    var url = '/report/kab'
+    var table = $('#datatable-id').DataTable({
+        "order": [],
+        "serverSide": true,
+        "processing": true,
+        "paging": false,
+        "searching": false,
+        "ajax": {
+            "url": url,
+            "type": 'GET',
+        },
+        "columns": [{
+                "responsivePriority": 8,
+                "width": "10%",
+                "data": "short_code",
+                "render": function(data, type, row) {
+                    if (type === 'display') {
+                        return '<h5>' + '[' + data + '] ' + row.name + '</h5>';
+                    }
+                    return data;
+                }
+            },
+            {
+                "responsivePriority": 1,
+                "width": "50%",
+                "data": "percentage",
+            },
+        ],
+        "language": {
+            'paginate': {
+                'previous': '<i class="fas fa-angle-left"></i>',
+                'next': '<i class="fas fa-angle-right"></i>'
+            }
+        }
+    });
+</script>
 @endsection

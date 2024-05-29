@@ -55,6 +55,7 @@ return new class extends Migration
             $table->id()->autoincrement();
             $table->integer('no');
             $table->string('name');
+            $table->string('name_p')->nullable();
             $table->enum('type', ['Utama', 'Cadangan']);
             $table->boolean('is_selected', false);
             $table->foreignId('bs_id')->constrained('bs');
@@ -69,6 +70,56 @@ return new class extends Migration
 
             $table->string('name');
             $table->foreignId('sample_id')->constrained('samples')->default(1);
+        });
+
+        Schema::create('report_bs', function (Blueprint $table) {
+            $table->id()->autoincrement();
+            $table->decimal('percentage');
+            $table->integer('count');
+            $table->string('area_code');
+            $table->string('short_code');
+            $table->string('village_short_code');
+            $table->string('village_long_code');
+            $table->string('village_name');
+            $table->string('subdistrict_short_code');
+            $table->string('subdistrict_long_code');
+            $table->string('subdistrict_name');
+            $table->string('regency_short_code');
+            $table->string('regency_long_code');
+            $table->string('regency_name');
+        });
+
+        Schema::create('report_village', function (Blueprint $table) {
+            $table->id()->autoincrement();
+            $table->decimal('percentage');
+            $table->string('village_short_code');
+            $table->string('village_long_code');
+            $table->string('village_name');
+            $table->string('subdistrict_short_code');
+            $table->string('subdistrict_long_code');
+            $table->string('subdistrict_name');
+            $table->string('regency_short_code');
+            $table->string('regency_long_code');
+            $table->string('regency_name');
+        });
+
+        Schema::create('report_subdistrict', function (Blueprint $table) {
+            $table->id()->autoincrement();
+            $table->decimal('percentage');
+            $table->string('subdistrict_short_code');
+            $table->string('subdistrict_long_code');
+            $table->string('subdistrict_name');
+            $table->string('regency_short_code');
+            $table->string('regency_long_code');
+            $table->string('regency_name');
+        });
+
+        Schema::create('report_regency', function (Blueprint $table) {
+            $table->id()->autoincrement();
+            $table->decimal('percentage');
+            $table->string('regency_short_code');
+            $table->string('regency_long_code');
+            $table->string('regency_name');
         });
     }
 
