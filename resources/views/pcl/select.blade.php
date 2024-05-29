@@ -15,11 +15,11 @@
         <div class="header-body">
             <div class="row align-items-center py-4">
                 <div class="col-lg-6 col-7">
-                    <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
+                    <nav aria-label="breadcrumb" class="d-md-inline-block ml-md-4">
                         <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
                             <li class="breadcrumb-item"><a href="#"><i class="fas fa-home"></i></a></li>
                             <li class="breadcrumb-item"><a href="/">Beranda</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">Lapor SEP</li>
+                            <!-- <li class="breadcrumb-item active" aria-current="page">Lapor SEP</li> -->
                         </ol>
                     </nav>
                 </div>
@@ -36,7 +36,7 @@
                 <div class="card">
                     <!-- Card header -->
                     <div class="card-header">
-                        <h3 class="mb-0">Lapor Progres</h3>
+                        <h3 class="mb-0">Input Progres</h3>
                     </div>
                     <!-- Card body -->
                     <div class="card-body">
@@ -502,7 +502,7 @@
                         ` :
                             ''
 
-                        var rep = item.sample_id != null ? `<span style="font-size: 0.9rem">Digantikan oleh: ${item.sample_name}</span>` : ''
+                        var rep = item.sample_id != null ? `<span style="font-size: 0.9rem">Digantikan oleh: <strong>(${item.sample_no}) ${item.sample_name}</strong></span>` : ''
 
                         itemDiv.innerHTML = `
                         <div class="mb-1">
@@ -554,7 +554,8 @@
         $('#sampleChangeList').append(`<option value="0" disabled selected> --- Pilih Sampel Pengganti --- </option>`);
         samples.forEach((sample) => {
             if (sample.type == 'Cadangan' && sample.is_selected == 0) {
-                $('#sampleChangeList').append(`<option value="${sample.id}">(${sample.no}) ${sample.name}</option>`);
+                var sel = item.sample_id == sample.id ? 'selected' : ''
+                $('#sampleChangeList').append(`<option ${sel} value="${sample.id}">(${sample.no}) ${sample.name}</option>`);
             }
         })
 

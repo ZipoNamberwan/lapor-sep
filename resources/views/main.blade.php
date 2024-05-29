@@ -55,23 +55,21 @@
                 <!-- Collapse -->
                 <div class="collapse navbar-collapse" id="sidenav-collapse-main">
                     <ul class="navbar-nav">
-                        @hasrole('Admin')
                         <li class="nav-item">
                             <a class="nav-link @if(url()->current() == url('/')) active @endif" href="/">
                                 <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                                    <i class="ni ni-chart-pie-35 text-primary text-sm opacity-10"></i>
+                                    <i class="fas fa-home text-primary text-sm opacity-10"></i>
                                 </div>
-                                <span class="nav-link-text ms-1">Dashboard</span>
+                                <span class="nav-link-text ms-1">Beranda</span>
                             </a>
                         </li>
-                        @endhasrole
-                        @hasanyrole('Admin|PML')
+                        @hasanyrole('pcl')
                         <li class="nav-item">
-                            <a class="nav-link @if(substr_count(url()->current(), 'jadwal-panen') == 1) active @endif" href="/jadwal-panen">
+                            <a class="nav-link @if(substr_count(url()->current(), 'petugas/create') == 1) active @endif" href="/petugas/create">
                                 <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                                    <i class="ni ni-calendar-grid-58 text-warning text-sm opacity-10"></i>
+                                    <i class="fas fa-plus-circle text-warning text-sm opacity-10"></i>
                                 </div>
-                                <span class="nav-link-text ms-1">Monitoring Jadwal Panen</span>
+                                <span class="nav-link-text ms-1">Input Progres</span>
                             </a>
                         </li>
                         @endhasrole
@@ -85,6 +83,7 @@
                             </a>
                         </li>
                         @endhasrole
+
                         <!-- @hasrole('Admin|PML')
                         <li class="nav-item">
                             <a class="nav-link @if(substr_count(url()->current(), 'reminder') == 1) active @endif" href="/reminder">
@@ -200,10 +199,11 @@
                                     </div>
                                 </div>
                             </li>
-                            <li class="nav-item d-sm-none">
+                            <li class="nav-item">
                                 <a class="nav-link" href="#" data-action="search-show" data-target="#navbar-search-main">
                                     <i class="ni ni-zoom-split-in"></i>
                                 </a>
+                                <!-- <img src="/assets/img/brand/blue.png" width="50%"/> -->
                             </li>
 
                         </ul>

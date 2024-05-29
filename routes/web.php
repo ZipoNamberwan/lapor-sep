@@ -23,10 +23,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/desa/{id}', [MainController::class, 'getVillage']);
     Route::get('/bs/{id}', [MainController::class, 'getBs']);
     Route::get('/sample/{id}', [MainController::class, 'getSample']);
-
-    // Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    // Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    // Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/petugas/data', [MainController::class, 'getPetugasData']);
 
     Route::group(['middleware' => ['role:adminprov']], function () {
         Route::get('/adminprov', [MainController::class, 'index']);

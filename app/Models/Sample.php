@@ -30,4 +30,9 @@ class Sample extends Model
     {
         return $this->belongsTo(Sample::class, 'sample_id');
     }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }
