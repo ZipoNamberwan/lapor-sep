@@ -62,7 +62,9 @@ class MainController extends Controller
         $user = User::find(Auth::user()->id);
         $records = null;
         if ($user->hasRole('adminkab')) {
-            $records = Sample::where('user_id', $user->id);
+            $records = Sample::where(['is_selected' => true])->whereHas('bs', function ($query) use ($user) {
+                $query->where('long_code', 'LIKE', $user->regency->long_code . '%');
+            });
         } else if ($user->hasRole('pcl')) {
             $records = Sample::where('user_id', $user->id);
         }
@@ -118,8 +120,8 @@ class MainController extends Controller
             $sampleData = array();
             $sampleData["index"] = $i;
             $sampleData["id"] = $sample->id;
-            $sampleData["user_id"] = $sample->user->id;
-            $sampleData["user_name"] = $sample->user->name;
+            $sampleData["user_id"] = $sample->user != null ? $sample->user->id : '';
+            $sampleData["user_name"] = $sample->user != null ? $sample->user->name : '';
             $sampleData["name"] = $sample->name;
             $sampleData["type"] = $sample->type;
             $sampleData["no"] = $sample->no;

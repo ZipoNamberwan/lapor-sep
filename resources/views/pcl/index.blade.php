@@ -40,10 +40,12 @@
                     </div>
                     <!-- Card body -->
                     <div class="card-body">
+                        @hasrole('pcl')
                         <a href="{{url('/petugas/create')}}" class="mb-2 btn btn-primary btn-round btn-icon" data-toggle="tooltip" data-original-title="Tambah Jadwal Panen">
                             <span class="btn-inner--icon"><i class="fas fa-plus-circle"></i></span>
                             <span class="btn-inner--text">Input Progres</span>
                         </a>
+                        @endrole
 
                         <div>
                             <p class="mb-0"><small>- Table bisa di scroll ke kanan</small></p>
@@ -59,6 +61,7 @@
                                             <th>Identitas Sampel</th>
                                             <th>Responden</th>
                                             <th>Status</th>
+                                            @hasrole('adminkab') <th>Pencacah</th> @endrole
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -107,7 +110,8 @@
                 "data": "name",
                 "render": function(data, type, row) {
                     if (type === 'display') {
-                        return '(' + row.no + ') ' + data;
+                        return '(' + row.no + ') ' + data + '<br/>' +
+                            row.type;
                     }
                     return data;
                 }
@@ -123,6 +127,12 @@
                     return data;
                 }
             },
+            @hasrole('adminkab') {
+                "responsivePriority": 1,
+                "width": "5%",
+                "data": "user_name",
+            },
+            @endrole
         ],
         "language": {
             'paginate': {

@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AdminKabController;
 use App\Http\Controllers\MainController;
 use App\Http\Controllers\PclController;
 use App\Http\Controllers\ProfileController;
@@ -29,7 +31,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/adminprov', [MainController::class, 'index']);
     });
     Route::group(['middleware' => ['role:adminkab']], function () {
-        Route::get('/adminkab', [MainController::class, 'index']);
+        Route::get('/adminkab', [AdminKabController::class, 'index']);
+        Route::get('/report', [AdminKabController::class, 'report']);
     });
     Route::group(['middleware' => ['role:pml|pcl']], function () {
         Route::get('/petugas', [PclController::class, 'index']);
