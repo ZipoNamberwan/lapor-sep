@@ -84,25 +84,92 @@ class PclController extends Controller
     public function update(Request $request, $id)
     {
         $sample = Sample::find($id);
+
+        // reset penggantinya jika status berhasil cacah/sedang/belum
+        if ($sample->replacement != null) {
+            if ($request->status == 9 || $request->status == 2 || $request->status == 1) {
+                Sample::find($sample->replacement->id)->update([
+                    'status_id' => 1,
+                    'is_selected' => false,
+                    'sample_id' => null,
+                    'user_id' => null
+                ]);
+
+                Commodity::where(['sample_id' => $sample->replacement->id])->delete();
+            }
+        }
+        //reset sampai sini
+
+        //kalau sampel cadangan gagal cacah, maka unbind sampel utamanya
+        if ($sample->type == 'Cadangan') {
+            if (!($request->status == 9 || $request->status == 2 || $request->status == 1)) {
+                $main_samples = Sample::where(['sample_id' => $sample->id])->get();
+                foreach ($main_samples as $s) {
+                    $s->update(['sample_id' => null]);
+                }
+            }
+        }
+        //sampai sini rule sampel cadangan
+
         $result = $sample->update([
             'status_id' => $request->status,
             'user_id' => Auth::user()->id,
-            'is_selected' => $request->status == 9 || $request->status == 2 || $request->status == 1
+            'is_selected' => $request->status == 9 || $request->status == 2 || $request->status == 1,
+            'sample_id' => $request->status == 9 || $request->status == 2 || $request->status == 1 ? null : $sample->sample_id
         ]);
 
         if ($request->commodities != null) {
+
+            //kalau gagal cacah, hapus komoditasnya kalau ada
             Commodity::where(['sample_id' => $id])->delete();
 
-            foreach ($request->commodities as $c) {
-                Commodity::create([
-                    'code' => $c['id'],
-                    'name' => $c['text'],
-                    'sample_id' => $id,
-                ]);
+            //kalau berhasil cacah/sedang maka simpan komoditas nya
+            if ($request->status == 9 || $request->status == 2) {
+                foreach ($request->commodities as $c) {
+                    Commodity::create([
+                        'code' => $c['id'],
+                        'name' => $c['text'],
+                        'sample_id' => $id,
+                    ]);
+                }
             }
         } else {
             Commodity::where(['sample_id' => $id])->delete();
         }
+
+        return $result;
+    }
+
+    public function updateSample(Request $request, $id)
+    {
+        $sample = Sample::find($id);
+        //reset pengganti yang sekarang
+        if ($sample->replacement != null) {
+            $replacement = Sample::find($sample->replacement->id);
+            $replacement->update([
+                'is_selected' => false,
+                'status_id' => 1,
+                'sample_id' => null,
+                'user_id' => null,
+            ]);
+            Commodity::where(['sample_id' => $replacement->id])->delete();
+        }
+        //reset sampai sini
+
+        $result =  $sample->update([
+            'sample_id' => $request->replacement,
+        ]);
+
+        //reset yang akan jadi pengganti
+        $replacement = Sample::find($request->replacement);
+        $replacement->update([
+            'is_selected' => true,
+            'status_id' => 1,
+            'sample_id' => null,
+            'user_id' => null,
+        ]);
+        Commodity::where(['sample_id' => $replacement->id])->delete();
+        //reset sampai sini
 
         return $result;
     }

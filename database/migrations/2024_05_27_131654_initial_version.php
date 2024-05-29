@@ -59,12 +59,14 @@ return new class extends Migration
             $table->boolean('is_selected', false);
             $table->foreignId('bs_id')->constrained('bs');
             $table->foreignId('user_id')->nullable()->constrained('users');
+            $table->foreignId('sample_id')->nullable()->constrained('samples');
             $table->foreignId('status_id')->constrained('statuses')->default(1);
         });
 
         Schema::create('commodities', function (Blueprint $table) {
             $table->id()->autoincrement();
             $table->string('code');
+
             $table->string('name');
             $table->foreignId('sample_id')->constrained('samples')->default(1);
         });

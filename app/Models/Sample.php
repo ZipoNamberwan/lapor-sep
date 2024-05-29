@@ -25,4 +25,9 @@ class Sample extends Model
     {
         return $this->hasMany(Commodity::class, 'sample_id');
     }
+
+    public function replacement()
+    {
+        return $this->belongsTo(Sample::class, 'sample_id');
+    }
 }

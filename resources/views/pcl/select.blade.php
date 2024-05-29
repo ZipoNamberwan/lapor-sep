@@ -78,12 +78,11 @@
 <div class="modal fade" id="sampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
-            <div class="modal-header">
+            <div class="modal-header pb-1">
                 <div>
                     <h2 id="modaltitle">Modal title</h2>
                     <h3 id="modalsubtitle">Modal title</h3>
                 </div>
-
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -102,7 +101,7 @@
                 </div>
 
                 <div class="mt-3">
-                    <label class="form-control-label">Komoditas <span class="text-danger">*</span></label>
+                    <label class="form-control-label">Komoditas <span class="text-danger">*</span> <small>Isikan jika berhasil cacah</small></label>
                 </div>
                 <div>
                     <div id="inputContainer">
@@ -125,6 +124,39 @@
             <div class="modal-footer pt-0">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
                 <button onclick="onSave()" type="button" class="btn btn-primary">Simpan</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="changeSampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Ganti Sampel</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="height: auto;">
+                <input type="hidden" id="toreplace" />
+                <label class="form-control-label">Sampel yang akan Diganti:</label>
+                <div id="sampletochange">
+
+                </div>
+                <label class="mt-4 form-control-label">Pilih Sampel Pengganti <span class="text-danger">*</span></label>
+
+                <select id="sampleChangeList" class="form-control" data-toggle="select"></select>
+                <div id="sampleChangeError" style="display: none;" class="text-valid mt-2">
+                    Belum diisi
+                </div>
+                <div>
+                    <p id="loading-change" style="visibility: hidden;" class="text-warning mt-3">Loading...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                <button onclick="onChange()" type="button" class="btn btn-primary">Ganti</button>
             </div>
         </div>
     </div>
@@ -152,6 +184,7 @@
 <script>
     var kodedata = null
     var selectedCommodities = []
+    var samples = []
 
     $(document).ready(function() {
         $('#subdistrict').on('change', function() {
@@ -238,6 +271,50 @@
         return commodity_valid && status_valid
     }
 
+    function validateChange() {
+
+        var replacement_valid = true
+        if (document.getElementById('sampleChangeList').value == 0 || document.getElementById('sampleChangeList').value == null) {
+            replacement_valid = false
+            document.getElementById('sampleChangeError').style.display = 'block'
+        } else {
+            document.getElementById('sampleChangeError').style.display = 'none'
+        }
+
+        return replacement_valid
+    }
+
+    function onChange() {
+        document.getElementById('sampleChangeError').style.display = 'none'
+        if (validateChange()) {
+            document.getElementById('loading-change').style.visibility = 'visible'
+
+            id = document.getElementById('toreplace').value
+            var updateData = {
+                replacement: document.getElementById('sampleChangeList').value,
+            };
+
+            $.ajax({
+                url: `/petugas/edit/sample/${id}`,
+                type: 'PATCH',
+                data: updateData,
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    loadSample(null)
+                    $('#changeSampleModal').modal('hide');
+                    document.getElementById('sampleChangeError').style.display = 'none'
+                    document.getElementById('loading-change').style.visibility = 'hidden'
+                },
+                error: function(xhr, status, error) {
+                    document.getElementById('sampleChangeError').style.display = 'none'
+                    document.getElementById('loading-change').style.visibility = 'hidden'
+                }
+            });
+        }
+    }
+
     function onSave() {
         document.getElementById('commodity_error').style.display = 'none'
         document.getElementById('status_error').style.display = 'none'
@@ -305,11 +382,6 @@
             },
             templateSelection: function(data) {
                 return ' -- Tambah Komoditas -- '
-                // if (data.id == 0) {
-                //     return data.text
-                // }
-
-                // return `(${data.id}) ${data.text}`;
             },
             language: {
                 inputTooShort: function(args) {
@@ -392,6 +464,7 @@
             type: 'GET',
             url: '/sample/' + id,
             success: function(response) {
+                samples = []
                 var response = JSON.parse(response);
 
                 const resultDiv = document.getElementById('samplelist');
@@ -404,31 +477,39 @@
                 resultDiv.appendChild(titleDiv)
 
                 response.forEach(item => {
-                    const itemDiv = document.createElement('div');
-                    itemDiv.className = 'border p-2 bg-white rounded d-flex flex-wrap justify-content-between align-items-center mb-1';
-                    itemDiv.style = "cursor: pointer;"
+                    samples.push(item)
 
-                    itemDiv.setAttribute('data-toggle', 'modal');
-                    itemDiv.setAttribute('data-target', '#sampleModal');
+                    if (item.type == 'Utama' || item.is_selected == 1) {
+                        const itemDiv = document.createElement('div');
+                        itemDiv.className = 'border p-2 bg-white rounded d-flex flex-wrap justify-content-between align-items-center mb-1';
+                        itemDiv.style = "cursor: pointer;"
 
-                    itemDiv.addEventListener('click', function() {
-                        updateModal(item)
-                    });
+                        itemDiv.setAttribute('data-toggle', 'modal');
+                        itemDiv.setAttribute('data-target', '#sampleModal');
 
-                    var changeSample = item.status_id != 9 && item.status_id != 1 && item.status_id != 2 ?
-                        `
-                            <button onclick="showChangeSampleModal(${JSON.stringify(item)})" class="btn btn-outline-success btn-sm">
+                        itemDiv.addEventListener('click', function() {
+                            updateModal(item)
+                        });
+
+                        var changeSample = item.status_id != 9 && item.status_id != 1 && item.status_id != 2 ?
+                            `
+                            <button onclick="showChangeSampleModal(${JSON.stringify(item).replace(/"/g, '&quot;')});"
+                                class="btn btn-outline-success btn-sm">
                                 <span class="btn-inner--icon">
                                     <i class="fas fa-exchange-alt"></i>
                                 </span>
                             </button>
                         ` :
-                        ''
+                            ''
 
-                    itemDiv.innerHTML = `
+                        var rep = item.sample_id != null ? `<span style="font-size: 0.9rem">Digantikan oleh: ${item.sample_name}</span>` : ''
+
+                        itemDiv.innerHTML = `
                         <div class="mb-1">
                             <h4 class="mb-1">(${item.no}) ${item.name}</h4>
-                            <p class="mb-0"><span class="badge badge-${item.color}">${item.status_name}</span></p>
+                            <span class="mb-1" style="font-size: 0.9rem">${item.type}</span>
+                            <p class="mb-1"><span class="badge badge-${item.color}">${item.status_name}</span></p>
+                            ${rep}
                         </div>
                         <div class="d-flex mb-1">
                             ${changeSample}
@@ -440,7 +521,8 @@
                         </div>
                     `;
 
-                    resultDiv.appendChild(itemDiv);
+                        resultDiv.appendChild(itemDiv);
+                    }
                 });
             },
             error: function(jqXHR, textStatus, errorThrown) {
@@ -457,7 +539,26 @@
 
     function showChangeSampleModal(item) {
         event.stopPropagation()
-        console.log(item)
+        $('#changeSampleModal').modal('show');
+
+        const itemDiv = document.getElementById('sampletochange');
+        itemDiv.className = 'border p-2 bg-white rounded d-flex flex-wrap justify-content-between align-items-center mb-1';
+        itemDiv.innerHTML = `
+                <div class="mb-1">
+                    <h4 class="mb-1">(${item.no}) ${item.name}</h4>
+                    <p class="mb-0"><span class="badge badge-${item.color}">${item.status_name}</span></p>
+                </div>
+            `;
+
+        $('#sampleChangeList').empty()
+        $('#sampleChangeList').append(`<option value="0" disabled selected> --- Pilih Sampel Pengganti --- </option>`);
+        samples.forEach((sample) => {
+            if (sample.type == 'Cadangan' && sample.is_selected == 0) {
+                $('#sampleChangeList').append(`<option value="${sample.id}">(${sample.no}) ${sample.name}</option>`);
+            }
+        })
+
+        document.getElementById('toreplace').value = item.id
     }
 
     function updateModal(sample) {

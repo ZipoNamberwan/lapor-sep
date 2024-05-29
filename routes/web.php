@@ -38,6 +38,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/petugas', [PclController::class, 'index']);
         Route::get('/petugas/create', [PclController::class, 'create']);
         Route::patch('/petugas/edit/{id}', [PclController::class, 'update']);
+        Route::patch('/petugas/edit/sample/{id}', [PclController::class, 'updateSample']);
     });
 });
 
