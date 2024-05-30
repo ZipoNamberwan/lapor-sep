@@ -27,16 +27,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/bs/{id}', [MainController::class, 'getBs']);
     Route::get('/sample/{id}', [MainController::class, 'getSample']);
     Route::get('/petugas/data', [MainController::class, 'getPetugasData']);
-    Route::get('/report', [ReportController::class, 'index']);
-    Route::get('/report/kab', [ReportController::class, 'reportKab']);
-    Route::get('/report/kec', [ReportController::class, 'reportKec']);
-    Route::get('/report/des', [ReportController::class, 'reportDesa']);
-    Route::get('/report/bs', [ReportController::class, 'reportBs']);
 
-    Route::group(['middleware' => ['role:adminprov']], function () {
-        Route::get('/adminprov', [MainController::class, 'index']);
-    });
-    Route::group(['middleware' => ['role:adminkab']], function () {
+    Route::get('/report/kab', [ReportController::class, 'reportKab']);
+    Route::get('/report/kec/{kodekab}', [ReportController::class, 'reportKec']);
+    Route::get('/report/bs/{kodekec}', [ReportController::class, 'reportBs']);
+    Route::get('/report/ruta/{kodebs}', [ReportController::class, 'reportRuta']);
+
+    Route::group(['middleware' => ['role:adminprov|adminkab']], function () {
         Route::get('/adminkab', [AdminKabController::class, 'index']);
     });
     Route::group(['middleware' => ['role:pml|pcl']], function () {

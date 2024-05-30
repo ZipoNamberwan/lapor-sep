@@ -121,6 +121,11 @@ return new class extends Migration
             $table->string('regency_long_code');
             $table->string('regency_name');
         });
+
+        Schema::create('last_update', function (Blueprint $table) {
+            $table->id()->autoincrement();
+            $table->timestamps();
+        });
     }
 
     /**
