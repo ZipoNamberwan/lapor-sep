@@ -15,12 +15,12 @@ class DummySeeder extends Seeder
      */
     public function run()
     {
-        for ($i = 0; $i < 5000; $i++) {
-            $randomId = rand(1, 25000);
-            Sample::find($randomId)->update([
-                'status_id' => 9
-            ]);
-        }
+        // for ($i = 0; $i < 5000; $i++) {
+        //     $randomId = rand(1, 25000);
+        //     Sample::find($randomId)->update([
+        //         'status_id' => 9
+        //     ]);
+        // }
         // Sample::create([
         //     'no' => 1,
         //     'name' => 'amin',
