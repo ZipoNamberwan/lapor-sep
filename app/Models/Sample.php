@@ -9,7 +9,6 @@ class Sample extends Model
 {
     use HasFactory;
     protected $guarded = [];
-    public $timestamps = false;
 
     public function bs()
     {

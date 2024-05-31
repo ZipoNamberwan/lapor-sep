@@ -73,16 +73,55 @@
                             </a>
                         </li>
                         @endhasrole
-                        @hasanyrole('adminkab|adminprov')
+
+                        @hasrole('adminkab|adminprov')
                         <li class="nav-item">
-                            <a class="nav-link @if(substr_count(url()->current(), 'report/kab') == 1) active @endif" href="/report/kab">
+                            <a class="nav-link @if((substr_count(url()->current(), 'report/kab') == 1) || (substr_count(url()->current(), 'report/petugas') == 1)) active @endif" href="#navbar-components" data-toggle="collapse" role="button" aria-expanded="@if((substr_count(url()->current(), 'report/kab') == 1) || (substr_count(url()->current(), 'report/petugas') == 1)) true @else false @endif" aria-controls="navbar-components">
                                 <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                                    <i class="ni ni-calendar-grid-58 text-warning text-sm opacity-10"></i>
+                                    <i class="ni ni-calendar-grid-58 text-danger text-sm opacity-10"></i>
                                 </div>
-                                <span class="nav-link-text ms-1">Report</span>
+                                <span class="nav-link-text">Report</span>
                             </a>
+                            <div class="collapse @if((substr_count(url()->current(), 'report/kab') == 1) || (substr_count(url()->current(), 'report/petugas') == 1)) show @endif" id="navbar-components">
+                                <ul class="nav nav-sm flex-column">
+                                    <li class="nav-item">
+                                        <a class="nav-link @if(substr_count(url()->current(), 'report/kab') == 1) active @endif" href="/report/kab">
+                                            <span class="nav-link-text ms-1">Report By Wilayah</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link @if(substr_count(url()->current(), 'report/petugas') == 1) active @endif" href="/report/petugas">
+                                            <span class="nav-link-text ms-1">Report By Petugas</span>
+                                        </a>
+                                    </li>
+
+                                </ul>
+                            </div>
                         </li>
-                        @endhasrole
+                        @endhasrole()
+
+                        @hasrole('Admin')
+                        <hr class="my-3">
+                        <h6 class="navbar-heading p-0 text-muted">Admin</h6>
+                        <ul class="navbar-nav">
+                            <li class="nav-item">
+                                <a class="nav-link @if(substr_count(url()->current(), 'users') == 1) active @endif" href="/users">
+                                    <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                                        <i class="ni ni-single-02 text-dark text-sm opacity-10"></i>
+                                    </div>
+                                    <span class="nav-link-text ms-1">Petugas</span>
+                                </a>
+                            </li>
+                            <!-- <li class="nav-item">
+                            <a class="nav-link @if(substr_count(url()->current(), 'pengaturan') == 1) active @endif" href="/pengaturan">
+                                <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                                    <i class="ni ni-settings-gear-65 text-warning text-sm opacity-10"></i>
+                                </div>
+                                <span class="nav-link-text ms-1">Pengaturan</span>
+                            </a>
+                        </li> -->
+                        </ul>
+                        @endhasrole()
 
                         <!-- @hasrole('Admin|PML')
                         <li class="nav-item">
@@ -102,42 +141,8 @@
                                 <span class="nav-link-text ms-1">Reminder Manual</span>
                             </a>
                         </li> -->
-                        @hasrole('Admin')
-                        <li class="nav-item">
-                            <a class="nav-link @if((substr_count(url()->current(), 'upload-palawija') == 1) || (substr_count(url()->current(), 'upload-padi') == 1)) active @endif" href="#navbar-components" data-toggle="collapse" role="button" aria-expanded="@if((substr_count(url()->current(), 'upload-palawija') == 1) || (substr_count(url()->current(), 'upload-padi') == 1)) true @else false @endif" aria-controls="navbar-components">
-                                <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                                    <i class="ni ni-cloud-upload-96 text-danger text-sm opacity-10"></i>
-                                </div>
-                                <span class="nav-link-text">Upload Jadwal Ubinan</span>
-                            </a>
-                            <div class="collapse @if((substr_count(url()->current(), 'upload-palawija') == 1) || (substr_count(url()->current(), 'upload-padi') == 1)) show @endif" id="navbar-components">
-                                <ul class="nav nav-sm flex-column">
-                                    <li class="nav-item">
-                                        <a class="nav-link @if(substr_count(url()->current(), 'upload-padi') == 1) active @endif" href="/upload-padi">
-                                            <span class="nav-link-text ms-1">Padi</span>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link @if(substr_count(url()->current(), 'upload-palawija') == 1) active @endif" href="/upload-palawija">
-                                            <span class="nav-link-text ms-1">Palawija</span>
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </li>
-                        @endhasrole()
-                        @hasrole('Admin|PML')
-                        <li class="nav-item">
-                            <a class="nav-link @if(substr_count(url()->current(), 'sent-messages') == 1) active @endif" href="/sent-messages">
-                                <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                                    <i class="ni ni-send text-warning text-sm opacity-10"></i>
-                                </div>
-                                <span class="nav-link-text ms-1">History Pesan Terkirim</span>
-                            </a>
-                        </li>
-                        @endhasrole()
                     </ul>
-                    @hasrole('Admin')
+                    @hasrole('adminkab')
                     <hr class="my-3">
                     <h6 class="navbar-heading p-0 text-muted">Admin</h6>
                     <ul class="navbar-nav">

@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Bs;
 use App\Models\LastUpdate;
 use App\Models\ReportBs;
+use App\Models\ReportPetugas;
 use App\Models\ReportRegency;
 use App\Models\ReportSubdistrict;
 use App\Models\ReportVillage;
@@ -34,10 +35,14 @@ class GenerateReport extends Command
      */
     public function handle()
     {
-        ReportBs::truncate();
-        ReportVillage::truncate();
-        ReportSubdistrict::truncate();
-        ReportRegency::truncate();
+        $today = date("Y-m-d");
+        // $today = '2024-06-01';
+
+        ReportBs::where(['date' => $today])->delete();
+        ReportVillage::where(['date' => $today])->delete();
+        ReportSubdistrict::where(['date' => $today])->delete();
+        ReportRegency::where(['date' => $today])->delete();
+        ReportPetugas::where(['date' => $today])->delete();
 
         $sql = "
         SELECT 
@@ -83,6 +88,7 @@ class GenerateReport extends Command
 
             $row['count'] = $b->sample_count;
             $row['percentage'] = $b->percentage;
+            $row['date'] = $today;
 
             $bs_report[] = $row;
         }
@@ -129,6 +135,8 @@ class GenerateReport extends Command
             $row['regency_short_code'] = $v['regency_short_code'];
             $row['regency_long_code'] = $v['regency_long_code'];
             $row['regency_name'] = $v['regency_name'];
+            $row['date'] = $today;
+
             $village_report[] = $row;
         }
         ReportVillage::insert($village_report);
@@ -168,6 +176,8 @@ class GenerateReport extends Command
             $row['regency_short_code'] = $s['regency_short_code'];
             $row['regency_long_code'] = $s['regency_long_code'];
             $row['regency_name'] = $s['regency_name'];
+            $row['date'] = $today;
+
             $subdistrict_report[] = $row;
         }
         ReportSubdistrict::insert($subdistrict_report);
@@ -201,12 +211,81 @@ class GenerateReport extends Command
             $row['regency_short_code'] = $r['regency_short_code'];
             $row['regency_long_code'] = $r['regency_long_code'];
             $row['regency_name'] = $r['regency_name'];
+            $row['date'] = $today;
+
             $regency_report[] = $row;
         }
         ReportRegency::insert($regency_report);
         //generate report kabupaten
 
         LastUpdate::create([]);
+
+        $sql = "
+        SELECT 
+        u.id,
+        u.name,
+        u.regency_id,
+        COALESCE(s.status_1_count, 0) AS status_1_count,
+        COALESCE(s.status_2_count, 0) AS status_2_count,
+        COALESCE(s.status_3_count, 0) AS status_3_count,
+        COALESCE(s.status_4_count, 0) AS status_4_count,
+        COALESCE(s.status_5_count, 0) AS status_5_count,
+        COALESCE(s.status_6_count, 0) AS status_6_count,
+        COALESCE(s.status_7_count, 0) AS status_7_count,
+        COALESCE(s.status_8_count, 0) AS status_8_count,
+        COALESCE(s.status_9_count, 0) AS status_9_count
+    FROM 
+        users u
+    LEFT JOIN 
+        (SELECT 
+            user_id,
+            SUM(CASE WHEN status_id = 1 THEN 1 ELSE 0 END) AS status_1_count,
+            SUM(CASE WHEN status_id = 2 THEN 1 ELSE 0 END) AS status_2_count,
+            SUM(CASE WHEN status_id = 3 THEN 1 ELSE 0 END) AS status_3_count,
+            SUM(CASE WHEN status_id = 4 THEN 1 ELSE 0 END) AS status_4_count,
+            SUM(CASE WHEN status_id = 5 THEN 1 ELSE 0 END) AS status_5_count,
+            SUM(CASE WHEN status_id = 6 THEN 1 ELSE 0 END) AS status_6_count,
+            SUM(CASE WHEN status_id = 7 THEN 1 ELSE 0 END) AS status_7_count,
+            SUM(CASE WHEN status_id = 8 THEN 1 ELSE 0 END) AS status_8_count,
+            SUM(CASE WHEN status_id = 9 THEN 1 ELSE 0 END) AS status_9_count
+        FROM 
+            samples
+        WHERE 
+            status_id IN (1, 2, 3, 4, 5, 6, 7, 8, 9)
+        GROUP BY 
+            user_id) s
+    ON 
+        u.id = s.user_id;
+
+                ";
+
+        $reportpetugas = DB::select(DB::raw($sql));
+
+        $rows = [];
+
+        foreach ($reportpetugas as $rp) {
+            $row = [];
+            if ($rp->id != null) {
+                $row['user_id'] = $rp->id;
+                $row['name'] = $rp->name;
+                $row['regency_id'] = $rp->regency_id;
+                $row['status_1_count'] = $rp->status_1_count;
+                $row['status_2_count'] = $rp->status_2_count;
+                $row['status_3_count'] = $rp->status_3_count;
+                $row['status_4_count'] = $rp->status_4_count;
+                $row['status_5_count'] = $rp->status_5_count;
+                $row['status_6_count'] = $rp->status_6_count;
+                $row['status_7_count'] = $rp->status_7_count;
+                $row['status_8_count'] = $rp->status_8_count;
+                $row['status_9_count'] = $rp->status_9_count;
+
+                $row['date'] = $today;
+                $rows[] = $row;
+            }
+        }
+
+        ReportPetugas::insert($rows);
+
         return Command::SUCCESS;
     }
 }

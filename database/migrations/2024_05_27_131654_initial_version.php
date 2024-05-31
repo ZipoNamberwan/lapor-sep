@@ -62,6 +62,7 @@ return new class extends Migration
             $table->foreignId('user_id')->nullable()->constrained('users');
             $table->foreignId('sample_id')->nullable()->constrained('samples');
             $table->foreignId('status_id')->constrained('statuses')->default(1);
+            $table->nullableTimestamps();
         });
 
         Schema::create('commodities', function (Blueprint $table) {
@@ -87,6 +88,7 @@ return new class extends Migration
             $table->string('regency_short_code');
             $table->string('regency_long_code');
             $table->string('regency_name');
+            $table->date('date');
         });
 
         Schema::create('report_village', function (Blueprint $table) {
@@ -101,6 +103,7 @@ return new class extends Migration
             $table->string('regency_short_code');
             $table->string('regency_long_code');
             $table->string('regency_name');
+            $table->date('date');
         });
 
         Schema::create('report_subdistrict', function (Blueprint $table) {
@@ -112,6 +115,7 @@ return new class extends Migration
             $table->string('regency_short_code');
             $table->string('regency_long_code');
             $table->string('regency_name');
+            $table->date('date');
         });
 
         Schema::create('report_regency', function (Blueprint $table) {
@@ -120,6 +124,24 @@ return new class extends Migration
             $table->string('regency_short_code');
             $table->string('regency_long_code');
             $table->string('regency_name');
+            $table->date('date');
+        });
+
+        Schema::create('report_petugas', function (Blueprint $table) {
+            $table->id()->autoincrement();
+            $table->string('user_id');
+            $table->string('name');
+            $table->string('regency_id')->nullable();
+            $table->string('status_1_count');
+            $table->string('status_2_count');
+            $table->string('status_3_count');
+            $table->string('status_4_count');
+            $table->string('status_5_count');
+            $table->string('status_6_count');
+            $table->string('status_7_count');
+            $table->string('status_8_count');
+            $table->string('status_9_count');
+            $table->date('date');
         });
 
         Schema::create('last_update', function (Blueprint $table) {

@@ -6,6 +6,7 @@ use App\Http\Controllers\MainController;
 use App\Http\Controllers\PclController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -26,15 +27,19 @@ Route::middleware('auth')->group(function () {
     Route::get('/desa/{id}', [MainController::class, 'getVillage']);
     Route::get('/bs/{id}', [MainController::class, 'getBs']);
     Route::get('/sample/{id}', [MainController::class, 'getSample']);
-    Route::get('/petugas/data', [MainController::class, 'getPetugasData']);
-
-    Route::get('/report/kab', [ReportController::class, 'reportKab']);
-    Route::get('/report/kec/{kodekab}', [ReportController::class, 'reportKec']);
-    Route::get('/report/bs/{kodekec}', [ReportController::class, 'reportBs']);
-    Route::get('/report/ruta/{kodebs}', [ReportController::class, 'reportRuta']);
+    Route::get('/petugas/data/{id?}', [MainController::class, 'getPetugasData']);
 
     Route::group(['middleware' => ['role:adminprov|adminkab']], function () {
+        Route::get('/report/petugas', [ReportController::class, 'reportByPetugas']);
+        Route::get('/report/petugas/{id}', [ReportController::class, 'reportDetailPetugas']);
+        Route::get('/report/kab', [ReportController::class, 'reportKab']);
+        Route::get('/report/kec/{kodekab}', [ReportController::class, 'reportKec']);
+        Route::get('/report/bs/{kodekec}', [ReportController::class, 'reportBs']);
+        Route::get('/report/ruta/{kodebs}', [ReportController::class, 'reportRuta']);
+
         Route::get('/adminkab', [AdminKabController::class, 'index']);
+        Route::get('/users/data', [UserController::class, 'getData']);
+        Route::resource('users', UserController::class);
     });
     Route::group(['middleware' => ['role:pml|pcl']], function () {
         Route::get('/petugas', [PclController::class, 'index']);

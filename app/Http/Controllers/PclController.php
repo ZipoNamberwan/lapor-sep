@@ -31,7 +31,7 @@ class PclController extends Controller
     {
 
         if (!Auth::check()) {
-            abort(403);
+            return abort(401);
         }
 
         $user = User::find(Auth::user()->id);
@@ -115,7 +115,9 @@ class PclController extends Controller
             'status_id' => $request->status,
             'user_id' => Auth::user()->id,
             'is_selected' => $request->status == 9 || $request->status == 2 || $request->status == 1,
-            'sample_id' => $request->status == 9 || $request->status == 2 || $request->status == 1 ? null : $sample->sample_id
+            'sample_id' => $request->status == 9 || $request->status == 2 || $request->status == 1 ? null : $sample->sample_id,
+            'created_at' => $sample->created_at == null ? now() : $sample->created_at,
+            'updated_at' => now()
         ]);
 
         if ($request->commodities != null) {
@@ -151,6 +153,8 @@ class PclController extends Controller
                 'status_id' => 1,
                 'sample_id' => null,
                 'user_id' => null,
+                'created_at' => null,
+                'updated_at' => null,
             ]);
             Commodity::where(['sample_id' => $replacement->id])->delete();
         }
@@ -167,6 +171,8 @@ class PclController extends Controller
             'status_id' => 1,
             'sample_id' => null,
             'user_id' => null,
+            'created_at' => null,
+            'updated_at' => null,
         ]);
         Commodity::where(['sample_id' => $replacement->id])->delete();
         //reset sampai sini

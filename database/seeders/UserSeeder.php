@@ -24,38 +24,38 @@ class UserSeeder extends Seeder
         $adminprov = User::create([
             'name' => 'Admin Provinsi',
             'email' => 'adminprov@gmail.com',
-            'password' => bcrypt('horehore')
+            'password' => bcrypt('sepsukses')
         ]);
         $adminprov->assignRole('adminprov');
 
-        $adminkab = User::create([
-            'name' => 'Admin Kabupaten',
-            'email' => 'admin01@gmail.com',
-            'password' => bcrypt('horehore'),
-            'regency_id' => 1
-        ]);
-        $adminkab->assignRole('adminkab');
+        // $adminkab = User::create([
+        //     'name' => 'Admin Kabupaten',
+        //     'email' => 'admin01@gmail.com',
+        //     'password' => bcrypt('sepsukses'),
+        //     'regency_id' => 1
+        // ]);
+        // $adminkab->assignRole('adminkab');
 
         $pcl = User::create([
             'name' => 'PCL Pacitan',
             'email' => 'pcl01@gmail.com',
-            'password' => bcrypt('horehore'),
+            'password' => bcrypt('sepsukses'),
             'regency_id' => 1
         ]);
         $pcl->assignRole('pcl');
 
-        $adminkab = User::create([
-            'name' => 'Admin Kabupaten',
-            'email' => 'admin02@gmail.com',
-            'password' => bcrypt('horehore'),
-            'regency_id' => 2
-        ]);
-        $adminkab->assignRole('adminkab');
+        // $adminkab = User::create([
+        //     'name' => 'Admin Kabupaten',
+        //     'email' => 'admin02@gmail.com',
+        //     'password' => bcrypt('sepsukses'),
+        //     'regency_id' => 2
+        // ]);
+        // $adminkab->assignRole('adminkab');
 
         $pcl = User::create([
             'name' => 'PCL Pacitan',
             'email' => 'pcl02@gmail.com',
-            'password' => bcrypt('horehore'),
+            'password' => bcrypt('sepsukses'),
             'regency_id' => 2
         ]);
         $pcl->assignRole('pcl');

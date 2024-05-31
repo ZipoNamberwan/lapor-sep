@@ -53,18 +53,30 @@ class MainController extends Controller
         return json_encode($samples);
     }
 
-    function getPetugasData(Request $request)
+    function getPetugasData(Request $request, $id = null)
     {
         if (Auth::user() == null) {
-            abort(403);
+            return abort(401);
         }
 
         $user = User::find(Auth::user()->id);
         $records = null;
         if ($user->hasRole('adminkab')) {
-            $records = Sample::where(['is_selected' => true])->whereHas('bs', function ($query) use ($user) {
-                $query->where('long_code', 'LIKE', $user->regency->long_code . '%');
-            });
+            if ($id == null) {
+                $records = Sample::where(function ($query) {
+                    $query->where('is_selected', true)
+                        ->orWhere('type', 'Utama');
+                })->whereHas('bs', function ($query) use ($user) {
+                    $query->where('long_code', 'LIKE', $user->regency->long_code . '%');
+                });
+            } else {
+                $records = Sample::where(['user_id' => $id])->where(function ($query) {
+                    $query->where('is_selected', true)
+                        ->orWhere('type', 'Utama');
+                })->whereHas('bs', function ($query) use ($user) {
+                    $query->where('long_code', 'LIKE', $user->regency->long_code . '%');
+                });
+            }
         } else if ($user->hasRole('pcl')) {
             $records = Sample::where('user_id', $user->id);
         }
