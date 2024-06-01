@@ -156,7 +156,7 @@ class GenerateReport extends Command
                     'regency_name' => $village['regency_name'],
                 ];
             } else {
-                $subdistrict_transform[$village['subdistrict_long_code']]['percentage'][] = $b['percentage'];
+                $subdistrict_transform[$village['subdistrict_long_code']]['percentage'][] = $village['percentage'];
             }
         }
 
@@ -194,7 +194,7 @@ class GenerateReport extends Command
                     'regency_name' => $subdistrict['regency_name'],
                 ];
             } else {
-                $regency_transform[$subdistrict['regency_long_code']]['percentage'][] = $b['percentage'];
+                $regency_transform[$subdistrict['regency_long_code']]['percentage'][] = $subdistrict['percentage'];
             }
         }
 
