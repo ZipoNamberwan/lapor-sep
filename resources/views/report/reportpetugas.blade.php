@@ -38,7 +38,7 @@
                     <div class="card-header">
                         <h3 class="mb-1">Report Petugas [{{$user->regency->long_code}}] {{$user->regency->name}}</h3>
                         <p class="mb-1">Data terakhir diperbarui pada: {{$lastUpdate}}</p>
-                        <p class="mb-0">* Report akan diperbarui setiap satu jam sekali</p>
+                        <p class="mb-0">* Report akan diperbarui setiap 5 menit sekali</p>
                     </div>
                     <!-- Card body -->
                     <div class="row">

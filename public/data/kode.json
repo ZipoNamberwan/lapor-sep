@@ -535,6 +535,7 @@
     "5320": "Jelawat",
     "5321": "Kancera",
     "5339": "Lele",
+    "5347": "Nila Air Tawar",
     "5356": "Sadarin",
     "5357": "Semah",
     "5358": "Sepat Rawa",
@@ -789,5 +790,9 @@
     "6413": "Sarang Burung",
     "6414": "Sarang Semut/Kroto",
     "6415": "Ulat",
-    "6499": "Lainnya"
+    "6499": "Lainnya",
+    "9996": "Penangkapan ikan konsumsi di laut",
+    "9997": "Penangkapan ikan konsumsi di perairan darat",
+    "9998": "Penangkapan benih",
+    "9999": "Penangkapan ikan hias"
 }
