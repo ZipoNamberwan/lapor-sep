@@ -192,7 +192,7 @@ class ReportController extends Controller
             $startrow = 4;
             $activeWorksheet->setCellValue('A' . $startrow, 'Kabupaten');
             $activeWorksheet->setCellValue('B' . $startrow, 'Progres Pencacahan (Persen)');
-            $activeWorksheet->setCellValue('C' . $startrow, 'Tanggal');
+            $activeWorksheet->setCellValue('C' . $startrow, 'Kondisi sd Tanggal');
             $activeWorksheet->getStyle('A' . $startrow . ':C' . $startrow)->applyFromArray([
                 'font' => [
                     'bold' => true,
@@ -278,7 +278,7 @@ class ReportController extends Controller
             $activeWorksheet->setCellValue('C' . $startrow, 'Desa');
             $activeWorksheet->setCellValue('D' . $startrow, 'Blok Sensus');
             $activeWorksheet->setCellValue('E' . $startrow, 'Progres Pencacahan (Persen)');
-            $activeWorksheet->setCellValue('F' . $startrow, 'Tanggal');
+            $activeWorksheet->setCellValue('F' . $startrow, 'Kondisi sd Tanggal');
             $activeWorksheet->getStyle('A' . $startrow . ':F' . $startrow)->applyFromArray([
                 'font' => [
                     'bold' => true,
@@ -473,7 +473,7 @@ class ReportController extends Controller
             $startrow = 4;
             $activeWorksheet->setCellValue('A' . $startrow, 'Kabupaten');
             $activeWorksheet->setCellValue('B' . $startrow, 'Nama');
-            $activeWorksheet->setCellValue('K' . $startrow, 'Tanggal');
+            $activeWorksheet->setCellValue('K' . $startrow, 'Kondisi sd Tanggal');
             foreach ($columns as $col => $name) {
                 $activeWorksheet->setCellValue($col . $startrow, $name);
             }
