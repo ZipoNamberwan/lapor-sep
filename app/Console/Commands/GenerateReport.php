@@ -9,6 +9,7 @@ use App\Models\ReportPetugas;
 use App\Models\ReportRegency;
 use App\Models\ReportSubdistrict;
 use App\Models\ReportVillage;
+use DateTime;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
@@ -35,7 +36,9 @@ class GenerateReport extends Command
      */
     public function handle()
     {
-        $today = date("Y-m-d");
+        $datetime = new DateTime();
+        $datetime->modify('+7 hours');
+        $today = $datetime->format('Y-m-d');
         // $today = '2024-06-01';
 
         ReportBs::where(['date' => $today])->delete();

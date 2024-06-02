@@ -37,9 +37,13 @@ Route::middleware('auth')->group(function () {
         Route::get('/report/bs/{kodekec}', [ReportController::class, 'reportBs']);
         Route::get('/report/ruta/{kodebs}', [ReportController::class, 'reportRuta']);
 
-        Route::get('/adminkab', [AdminKabController::class, 'index']);
+        Route::get('/adminkab', [ReportController::class, 'index']);
+        Route::get('/adminprov', [ReportController::class, 'index']);
+        
         Route::get('/users/data', [UserController::class, 'getData']);
         Route::resource('users', UserController::class);
+        Route::get('/download', [ReportController::class, 'showDownload']);
+        Route::post('/download', [ReportController::class, 'download']);
     });
     Route::group(['middleware' => ['role:pml|pcl']], function () {
         Route::get('/petugas', [PclController::class, 'index']);

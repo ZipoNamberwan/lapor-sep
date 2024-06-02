@@ -21,9 +21,11 @@ class CheckRole
         if (Auth::check()) {
             $user = User::find(Auth::user()->id);
             if ($user->hasRole('adminprov')) { // Assuming 'isAdmin' is a method that checks if the user is an admin
-                return redirect('/adminprov');
+                // return redirect('/adminprov');
+                return redirect('/report/kab');
             } else if ($user->hasRole('adminkab')) {
-                return redirect('/adminkab');
+                // return redirect('/adminkab');
+                return redirect('/report/kab');
             } else {
                 return redirect('/petugas');
             }

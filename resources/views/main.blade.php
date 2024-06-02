@@ -89,16 +89,28 @@
                                             <span class="nav-link-text ms-1">Report By Wilayah</span>
                                         </a>
                                     </li>
+                                    @hasrole('adminkab')
                                     <li class="nav-item">
                                         <a class="nav-link @if(substr_count(url()->current(), 'report/petugas') == 1) active @endif" href="/report/petugas">
                                             <span class="nav-link-text ms-1">Report By Petugas</span>
                                         </a>
                                     </li>
-
+                                    @endhasrole
                                 </ul>
                             </div>
                         </li>
-                        @endhasrole()
+                        @endhasrole
+
+                        @hasrole('adminkab|adminprov')
+                        <li class="nav-item">
+                            <a class="nav-link @if(substr_count(url()->current(), 'download') == 1) active @endif" href="/download">
+                                <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                                    <i class="fas fa-download text-success text-sm opacity-10"></i>
+                                </div>
+                                <span class="nav-link-text ms-1">Unduh</span>
+                            </a>
+                        </li>
+                        @endhasrole
 
                         @hasrole('Admin')
                         <hr class="my-3">
