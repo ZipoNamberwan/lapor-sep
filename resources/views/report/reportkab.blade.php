@@ -58,6 +58,10 @@
                                             <td>{{$reg->percentage}}</td>
                                         </tr>
                                         @endforeach
+                                        <tr>
+                                            <td>[3500] JAWA TIMUR</td>
+                                            <td>{{$prov}}</td>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </div>

@@ -89,12 +89,15 @@ class GenerateReport extends Command
             $row['regency_long_code'] = $bs_tmp->village->subdistrict->regency->long_code;
             $row['regency_name'] = $bs_tmp->village->subdistrict->regency->name;
 
+            $row['total_sample'] = 10;
+            $row['success_sample'] = $b->sample_count;
             $row['count'] = $b->sample_count;
             $row['percentage'] = $b->percentage;
             $row['date'] = $today;
 
             $bs_report[] = $row;
         }
+
         ReportBs::insert($bs_report);
         //generate report bs
 
@@ -103,7 +106,8 @@ class GenerateReport extends Command
         foreach ($bs_report as $b) {
             if (!array_key_exists($b['village_long_code'], $village_transform)) {
                 $village_transform[$b['village_long_code']] = [
-                    'percentage' => [$b['percentage']],
+                    'success_sample' => [$b['success_sample']],
+                    'total_sample' => [$b['total_sample']],
                     'village_short_code' => $b['village_short_code'],
                     'village_long_code' => $b['village_long_code'],
                     'village_name' => $b['village_name'],
@@ -115,20 +119,29 @@ class GenerateReport extends Command
                     'regency_name' => $b['regency_name'],
                 ];
             } else {
-                $village_transform[$b['village_long_code']]['percentage'][] = $b['percentage'];
+                $village_transform[$b['village_long_code']]['total_sample'][] = $b['total_sample'];
+                $village_transform[$b['village_long_code']]['success_sample'][] = $b['success_sample'];
             }
         }
+
 
         $village_report = [];
         foreach ($village_transform as $v) {
             $row = [];
 
+            $p_success = 0;
+            foreach ($v['success_sample'] as $p) {
+                $p_success = $p_success + $p;
+            }
+
             $p_total = 0;
-            foreach ($v['percentage'] as $p) {
+            foreach ($v['total_sample'] as $p) {
                 $p_total = $p_total + $p;
             }
 
-            $row['percentage'] = $p_total / count($v['percentage']);
+            $row['percentage'] = $p_success / $p_total * 100;
+            $row['success_sample'] = $p_success;
+            $row['total_sample'] = $p_total;
             $row['village_short_code'] = $v['village_short_code'];
             $row['village_long_code'] = $v['village_long_code'];
             $row['village_name'] = $v['village_name'];
@@ -142,6 +155,7 @@ class GenerateReport extends Command
 
             $village_report[] = $row;
         }
+
         ReportVillage::insert($village_report);
         //generate report desa
 
@@ -150,7 +164,8 @@ class GenerateReport extends Command
         foreach ($village_report as $village) {
             if (!array_key_exists($village['subdistrict_long_code'], $subdistrict_transform)) {
                 $subdistrict_transform[$village['subdistrict_long_code']] = [
-                    'percentage' => [$village['percentage']],
+                    'success_sample' => [$village['success_sample']],
+                    'total_sample' => [$village['total_sample']],
                     'subdistrict_short_code' => $village['subdistrict_short_code'],
                     'subdistrict_long_code' => $village['subdistrict_long_code'],
                     'subdistrict_name' => $village['subdistrict_name'],
@@ -159,20 +174,29 @@ class GenerateReport extends Command
                     'regency_name' => $village['regency_name'],
                 ];
             } else {
-                $subdistrict_transform[$village['subdistrict_long_code']]['percentage'][] = $village['percentage'];
+                $subdistrict_transform[$village['subdistrict_long_code']]['total_sample'][] = $village['total_sample'];
+                $subdistrict_transform[$village['subdistrict_long_code']]['success_sample'][] = $village['success_sample'];
             }
         }
 
         $subdistrict_report = [];
         foreach ($subdistrict_transform as $s) {
+
             $row = [];
 
+            $p_success = 0;
+            foreach ($s['success_sample'] as $p) {
+                $p_success = $p_success + $p;
+            }
+
             $p_total = 0;
-            foreach ($s['percentage'] as $p) {
+            foreach ($s['total_sample'] as $p) {
                 $p_total = $p_total + $p;
             }
 
-            $row['percentage'] = $p_total / count($s['percentage']);
+            $row['percentage'] = $p_success / $p_total * 100;
+            $row['success_sample'] = $p_success;
+            $row['total_sample'] = $p_total;
             $row['subdistrict_short_code'] = $s['subdistrict_short_code'];
             $row['subdistrict_long_code'] = $s['subdistrict_long_code'];
             $row['subdistrict_name'] = $s['subdistrict_name'];
@@ -183,6 +207,7 @@ class GenerateReport extends Command
 
             $subdistrict_report[] = $row;
         }
+
         ReportSubdistrict::insert($subdistrict_report);
         //generate report kecamatan
 
@@ -191,13 +216,15 @@ class GenerateReport extends Command
         foreach ($subdistrict_report as $subdistrict) {
             if (!array_key_exists($subdistrict['regency_long_code'], $regency_transform)) {
                 $regency_transform[$subdistrict['regency_long_code']] = [
-                    'percentage' => [$subdistrict['percentage']],
+                    'success_sample' => [$subdistrict['success_sample']],
+                    'total_sample' => [$subdistrict['total_sample']],
                     'regency_short_code' => $subdistrict['regency_short_code'],
                     'regency_long_code' => $subdistrict['regency_long_code'],
                     'regency_name' => $subdistrict['regency_name'],
                 ];
             } else {
-                $regency_transform[$subdistrict['regency_long_code']]['percentage'][] = $subdistrict['percentage'];
+                $regency_transform[$subdistrict['regency_long_code']]['total_sample'][] = $subdistrict['total_sample'];
+                $regency_transform[$subdistrict['regency_long_code']]['success_sample'][] = $subdistrict['success_sample'];
             }
         }
 
@@ -205,12 +232,19 @@ class GenerateReport extends Command
         foreach ($regency_transform as $r) {
             $row = [];
 
+            $p_success = 0;
+            foreach ($r['success_sample'] as $p) {
+                $p_success = $p_success + $p;
+            }
+
             $p_total = 0;
-            foreach ($r['percentage'] as $p) {
+            foreach ($r['total_sample'] as $p) {
                 $p_total = $p_total + $p;
             }
 
-            $row['percentage'] = $p_total / count($r['percentage']);
+            $row['percentage'] = $p_success / $p_total * 100;
+            $row['success_sample'] = $p_success;
+            $row['total_sample'] = $p_total;
             $row['regency_short_code'] = $r['regency_short_code'];
             $row['regency_long_code'] = $r['regency_long_code'];
             $row['regency_name'] = $r['regency_name'];
@@ -218,6 +252,7 @@ class GenerateReport extends Command
 
             $regency_report[] = $row;
         }
+
         ReportRegency::insert($regency_report);
         //generate report kabupaten
 
@@ -289,6 +324,6 @@ class GenerateReport extends Command
 
         ReportPetugas::insert($rows);
 
-        return Command::SUCCESS;
+        return 1;
     }
 }

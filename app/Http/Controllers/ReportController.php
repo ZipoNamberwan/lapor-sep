@@ -9,6 +9,7 @@ use App\Models\ReportBs;
 use App\Models\ReportPetugas;
 use App\Models\ReportRegency;
 use App\Models\ReportSubdistrict;
+use App\Models\ReportVillage;
 use App\Models\Sample;
 use App\Models\Status;
 use App\Models\Subdistrict;
@@ -18,6 +19,7 @@ use DatePeriod;
 use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
@@ -70,12 +72,17 @@ class ReportController extends Controller
             $percentage = ReportRegency::where(['regency_long_code' => $user->regency->long_code])->where(['date' => $today])->first()->percentage;
             $data[] = ReportRegency::where(['regency_long_code' => $user->regency->long_code])->whereIn('date', $dates)->get()->pluck('percentage');
         } else {
-            $percentage = ReportRegency::where(['date' => $today])->get()->pluck('percentage');
-            $percentage = round($percentage->sum() / count($percentage), 2);
+            $percentage = round(ReportRegency::where(['date' => $today])->get()->pluck('success_sample')->sum() /
+                ReportRegency::where(['date' => $today])->get()->pluck('total_sample')->sum() * 100, 2);
+
 
             foreach ($dates as $date) {
                 $p = ReportRegency::where(['date' => $date])->get()->pluck('percentage');
-                $data[] = round($p->sum() / count($p), 2);
+                if (count($p) == 0) {
+                    $data[] = 0;
+                } else {
+                    $data[] = round($p->sum() / count($p), 2);
+                }
             }
         }
 
@@ -89,6 +96,9 @@ class ReportController extends Controller
         $today = $datetime->format('Y-m-d');
 
         $regencies = ReportRegency::where(['date' => $today])->orderBy('regency_short_code')->get();
+        $prov = round(ReportRegency::where(['date' => $today])->get()->pluck('success_sample')->sum() /
+            ReportRegency::where(['date' => $today])->get()->pluck('total_sample')->sum() * 100, 2);
+
         $lastUpdate = LastUpdate::latest()->first();
         if ($lastUpdate != null) {
             $lastUpdate = $lastUpdate->created_at->addHours(7)->format('j M Y H:i');
@@ -96,7 +106,7 @@ class ReportController extends Controller
             $lastUpdate = '';
         }
 
-        return view('report/reportkab', ['regencies' => $regencies, 'lastUpdate' => $lastUpdate]);
+        return view('report/reportkab', ['regencies' => $regencies, 'lastUpdate' => $lastUpdate, 'prov' => $prov]);
     }
 
     function reportKec($kodekab)
@@ -585,5 +595,9 @@ class ReportController extends Controller
         }
 
         return true;
+    }
+
+    function generate()
+    {
     }
 }

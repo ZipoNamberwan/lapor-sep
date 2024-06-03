@@ -30,6 +30,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/petugas/data/{id?}', [MainController::class, 'getPetugasData']);
 
     Route::group(['middleware' => ['role:adminprov|adminkab']], function () {
+        // Route::get('/generate', [ReportController::class, 'generate']);
+
         Route::get('/report/petugas', [ReportController::class, 'reportByPetugas']);
         Route::get('/report/petugas/{id}', [ReportController::class, 'reportDetailPetugas']);
         Route::get('/report/kab', [ReportController::class, 'reportKab']);
