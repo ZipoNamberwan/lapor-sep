@@ -96,8 +96,15 @@ class ReportController extends Controller
         $today = $datetime->format('Y-m-d');
 
         $regencies = ReportRegency::where(['date' => $today])->orderBy('regency_short_code')->get();
-        $prov = round(ReportRegency::where(['date' => $today])->get()->pluck('success_sample')->sum() /
-            ReportRegency::where(['date' => $today])->get()->pluck('total_sample')->sum() * 100, 2);
+
+        $total_sample = ReportRegency::where(['date' => $today])->get()->pluck('total_sample')->sum();
+        $success_sample = ReportRegency::where(['date' => $today])->get()->pluck('success_sample')->sum();
+
+        $prov = 0;
+        if ($total_sample != 0) {
+            $prov = round($success_sample /
+                $total_sample * 100, 2);
+        }
 
         $lastUpdate = LastUpdate::latest()->first();
         if ($lastUpdate != null) {
