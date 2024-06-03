@@ -13,6 +13,8 @@ use App\Models\Sample;
 use App\Models\Status;
 use App\Models\Subdistrict;
 use App\Models\User;
+use DateInterval;
+use DatePeriod;
 use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -28,7 +30,56 @@ class ReportController extends Controller
      */
     public function index()
     {
-        return view('report/index');
+        if (!Auth::check()) {
+            abort(403);
+        }
+
+        $lastUpdate = LastUpdate::latest()->first();
+        if ($lastUpdate != null) {
+            $lastUpdate = $lastUpdate->created_at->addHours(7)->format('j M Y H:i');
+        } else {
+            $lastUpdate = '';
+        }
+
+        $datetime = new DateTime();
+        $datetime->modify('+7 hours');
+        $today = $datetime->format('Y-m-d');
+
+        $user = User::find(Auth::user()->id);
+        $percentage = 0;
+        $dates = [];
+        $data = [];
+
+        $startDate = new DateTime('2024-06-01');
+        $endDate = new DateTime($today);
+
+        // Include the end date in the loop
+        $endDate->modify('+1 day');
+
+        $period = new DatePeriod(
+            $startDate,
+            new DateInterval('P1D'),
+            $endDate
+        );
+
+        foreach ($period as $date) {
+            $dates[] = $date->format("Y-m-d");
+        }
+
+        if ($user->hasRole('adminkab')) {
+            $percentage = ReportRegency::where(['regency_long_code' => $user->regency->long_code])->where(['date' => $today])->first()->percentage;
+            $data[] = ReportRegency::where(['regency_long_code' => $user->regency->long_code])->whereIn('date', $dates)->get()->pluck('percentage');
+        } else {
+            $percentage = ReportRegency::where(['date' => $today])->get()->pluck('percentage');
+            $percentage = round($percentage->sum() / count($percentage), 2);
+
+            foreach ($dates as $date) {
+                $p = ReportRegency::where(['date' => $date])->get()->pluck('percentage');
+                $data[] = round($p->sum() / count($p), 2);
+            }
+        }
+
+        return view('report/index', ['lastUpdate' => $lastUpdate, 'percentage' => $percentage, 'dates' => $dates, 'data' => $data]);
     }
 
     function reportKab()
@@ -339,7 +390,7 @@ class ReportController extends Controller
                 $rows = Sample::where(function ($query) {
                     $query->where('is_selected', true)
                         ->orWhere('type', 'Utama');
-                })->orderBy('bs_id')->orderBy('no')->get();
+                })->where('status_id', '!=', 1)->orderBy('bs_id')->orderBy('no')->get();
             }
 
             $spreadsheet = new Spreadsheet();
