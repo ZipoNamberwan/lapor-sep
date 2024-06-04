@@ -46,6 +46,7 @@
                                     <thead class="thead-light">
                                         <tr>
                                             <th>Sampel</th>
+                                            <th>Petugas</th>
                                             <th>Status</th>
                                             <th style="max-width: 400px;">Komoditas</th>
                                             <th>Pengganti</th>
@@ -55,6 +56,10 @@
                                         @foreach($samples as $sample)
                                         <tr>
                                             <td>[{{$sample->no}}] {{$sample->name}}</td>
+                                            <td>
+                                                <p class="mb-0">{{$sample->user != null ? $sample->user->name : ''}}</p>
+                                                <p class="mb-0 text-muted">{{$sample->user != null ? $sample->user->pml : ''}}</p>
+                                            </td>
                                             <td>
                                                 <p class="mb-1"><span class="badge badge-{{$sample->status->color}}">{{$sample->status->name}}</span></p>
                                             </td>
@@ -84,18 +89,4 @@
 <script src="/assets/vendor/datatables2/datatables.min.js"></script>
 <script src="/assets/vendor/momentjs/moment-with-locales.js"></script>
 
-<script>
-    var url = '/report/kab'
-    var table = $('#datatable-id').DataTable({
-        "order": [],
-        "paging": false,
-        "searching": false,
-        "language": {
-            'paginate': {
-                'previous': '<i class="fas fa-angle-left"></i>',
-                'next': '<i class="fas fa-angle-right"></i>'
-            }
-        }
-    });
-</script>
 @endsection

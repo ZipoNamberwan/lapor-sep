@@ -86,6 +86,7 @@
                                         <tr>
                                             <th>Nama</th>
                                             <th>Email</th>
+                                            <th>PML</th>
                                             <th>Aksi</th>
                                         </tr>
                                     </thead>
@@ -125,6 +126,11 @@
                 "responsivePriority": 1,
                 "width": "10%",
                 "data": "email",
+            },
+            {
+                "responsivePriority": 1,
+                "width": "10%",
+                "data": "pml",
             },
             {
                 "responsivePriority": 1,

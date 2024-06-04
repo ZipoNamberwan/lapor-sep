@@ -65,6 +65,17 @@
                                 </div>
                             </div>
                             <div class="row">
+                                <div class="col-md-6 mt-3">
+                                    <label class="form-control-label" for="pml">PML <span class="text-danger">*</span></label>
+                                    <input type="text" name="pml" class="form-control @error('pml') is-invalid @enderror" id="validationCustom03" value="{{ @old('pml', $user->pml) }}">
+                                    @error('pml')
+                                    <div class="invalid-feedback">
+                                        {{ $message }}
+                                    </div>
+                                    @enderror
+                                </div>
+                            </div>
+                            <div class="row">
                                 <div class="col-md-6 mt-3 mb-3">
                                     <label class="form-control-label" for="password">Password <span class="text-danger">*</span>
                                         <p><small>Abaikan jika password tidak diubah, isikan password baru jika ingin password diubah</small></p>

@@ -42,6 +42,7 @@ class UserController extends Controller
         $this->validate($request, [
             'name' => 'required',
             'email' => 'required|email|unique:users,email',
+            'pml' => 'required',
             'password' => 'required',
         ]);
 
@@ -52,6 +53,7 @@ class UserController extends Controller
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
+            'pml' => $request->pml,
             'password' => bcrypt($request->password),
             'regency_id' => $admin->regency->id
         ]);
@@ -98,11 +100,13 @@ class UserController extends Controller
             'name' => 'required',
             'email' => 'required',
             'password' => 'required',
+            'pml' => 'required',
         ]);
 
         $user->update([
             'name' => $request->name,
             'email' => $request->email,
+            'pml' => $request->pml,
             'password' => $request->password != $user->password ?  bcrypt($request->password) : $user->password,
         ]);
 
@@ -185,6 +189,7 @@ class UserController extends Controller
             $userData["id"] = $user->id;
             $userData["name"] = $user->name;
             $userData["email"] = $user->email;
+            $userData["pml"] = $user->pml;
             $usersArray[] = $userData;
             $i++;
         }
