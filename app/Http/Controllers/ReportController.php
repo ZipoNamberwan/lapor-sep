@@ -70,11 +70,10 @@ class ReportController extends Controller
 
         if ($user->hasRole('adminkab')) {
             $percentage = ReportRegency::where(['regency_long_code' => $user->regency->long_code])->where(['date' => $today])->first()->percentage;
-            $data[] = ReportRegency::where(['regency_long_code' => $user->regency->long_code])->whereIn('date', $dates)->get()->pluck('percentage');
+            $data = ReportRegency::where(['regency_long_code' => $user->regency->long_code])->whereIn('date', $dates)->orderBy('date')->get()->pluck('percentage');
         } else {
             $percentage = round(ReportRegency::where(['date' => $today])->get()->pluck('success_sample')->sum() /
                 ReportRegency::where(['date' => $today])->get()->pluck('total_sample')->sum() * 100, 2);
-
 
             foreach ($dates as $date) {
                 $p = ReportRegency::where(['date' => $date])->get()->pluck('percentage');
@@ -85,7 +84,6 @@ class ReportController extends Controller
                 }
             }
         }
-
         return view('report/index', ['lastUpdate' => $lastUpdate, 'percentage' => $percentage, 'dates' => $dates, 'data' => $data]);
     }
 

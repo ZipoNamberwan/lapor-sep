@@ -65,7 +65,25 @@
                     </div>
                     <!-- Card body -->
                     <div class="card-body">
-                        <div style="width: 75%; margin: auto;">
+                        <div class="table-responsive mb-4 border">
+                            <table class="table" width="100%">
+                                <thead class="thead-light">
+                                    <tr>
+                                        @foreach($dates as $date)
+                                        <th class="text-center">{{$date}}</th>
+                                        @endforeach
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        @foreach($data as $dt)
+                                        <td class="text-center border"><strong>{{$dt}}</strong></td>
+                                        @endforeach
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mt-4" style="width: 75%; margin: auto;">
                             <canvas id="myLineChart"></canvas>
                         </div>
                     </div>
@@ -121,6 +139,10 @@
                     font: {
                         weight: 'bold'
                     }
+                },
+                title: {
+                    display: true,
+                    text: (ctx) => 'Point Style: ' + ctx.chart.data.datasets[0].pointStyle,
                 }
             },
             scales: {
