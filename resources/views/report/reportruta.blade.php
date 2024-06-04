@@ -57,8 +57,8 @@
                                         <tr>
                                             <td>[{{$sample->no}}] {{$sample->name}}</td>
                                             <td>
-                                                <p class="mb-0">{{$sample->user != null ? $sample->user->name : ''}}</p>
-                                                <p class="mb-0 text-muted">{{$sample->user != null ? $sample->user->pml : ''}}</p>
+                                                {{$sample->user != null ? $sample->user->name : ''}}</br>
+                                                {{$sample->user != null ? $sample->user->pml : ''}}
                                             </td>
                                             <td>
                                                 <p class="mb-1"><span class="badge badge-{{$sample->status->color}}">{{$sample->status->name}}</span></p>
