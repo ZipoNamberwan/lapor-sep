@@ -234,7 +234,7 @@ class ReportController extends Controller
             $activeWorksheet = $spreadsheet->getActiveSheet();
 
             $activeWorksheet->setCellValue('A1', 'Progres Pencacahan SEP');
-            $activeWorksheet->mergeCells('A1:C1');
+            $activeWorksheet->mergeCells('A1:E1');
             $activeWorksheet->getStyle('A1')->applyFromArray([
                 'font' => [
                     'bold' => true,
@@ -247,7 +247,7 @@ class ReportController extends Controller
             ]);
 
             $activeWorksheet->setCellValue('A2', 'Data terakhir diupdate pada: ' . $lastUpdate->created_at->addHours(7)->format('j M Y H:i'));
-            $activeWorksheet->mergeCells('A2:C2');
+            $activeWorksheet->mergeCells('A2:E2');
             $activeWorksheet->getStyle('A2')->applyFromArray([
                 'font' => [
                     'size' => 8,
@@ -260,8 +260,10 @@ class ReportController extends Controller
             $startrow = 4;
             $activeWorksheet->setCellValue('A' . $startrow, 'Kabupaten');
             $activeWorksheet->setCellValue('B' . $startrow, 'Progres Pencacahan (Persen)');
-            $activeWorksheet->setCellValue('C' . $startrow, 'Kondisi sd Tanggal');
-            $activeWorksheet->getStyle('A' . $startrow . ':C' . $startrow)->applyFromArray([
+            $activeWorksheet->setCellValue('C' . $startrow, 'Sampel Berhasil Dicacah');
+            $activeWorksheet->setCellValue('D' . $startrow, 'Target Sampel');
+            $activeWorksheet->setCellValue('E' . $startrow, 'Kondisi sd Tanggal');
+            $activeWorksheet->getStyle('A' . $startrow . ':E' . $startrow)->applyFromArray([
                 'font' => [
                     'bold' => true,
                 ],
@@ -277,13 +279,15 @@ class ReportController extends Controller
             foreach ($rows as $row) {
                 $activeWorksheet->setCellValue('A' . $startrow, '[' . $row->regency_short_code . '] ' . $row->regency_name);
                 $activeWorksheet->setCellValue('B' . $startrow, $row->percentage);
-                $activeWorksheet->setCellValue('C' . $startrow, (new DateTime($row->date))->format('d M Y'));
-                $activeWorksheet->getStyle('B' . $startrow . ':C' . $startrow)->applyFromArray(['alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,],]);
+                $activeWorksheet->setCellValue('C' . $startrow, $row->success_sample);
+                $activeWorksheet->setCellValue('D' . $startrow, $row->total_sample);
+                $activeWorksheet->setCellValue('E' . $startrow, (new DateTime($row->date))->format('d M Y'));
+                $activeWorksheet->getStyle('B' . $startrow . ':E' . $startrow)->applyFromArray(['alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,],]);
 
                 $startrow++;
             }
 
-            foreach (range('A', 'C') as $columnID) {
+            foreach (range('A', 'E') as $columnID) {
                 $activeWorksheet->getColumnDimension($columnID)->setAutoSize(true);
             }
 
@@ -317,7 +321,7 @@ class ReportController extends Controller
             $activeWorksheet = $spreadsheet->getActiveSheet();
 
             $activeWorksheet->setCellValue('A1', 'Progres Pencacahan SEP Menurut Blok Sensus di ' . $area);
-            $activeWorksheet->mergeCells('A1:F1');
+            $activeWorksheet->mergeCells('A1:H1');
             $activeWorksheet->getStyle('A1')->applyFromArray([
                 'font' => [
                     'bold' => true,
@@ -330,7 +334,7 @@ class ReportController extends Controller
             ]);
 
             $activeWorksheet->setCellValue('A2', 'Data terakhir diupdate pada: ' . $lastUpdate->created_at->addHours(7)->format('j M Y H:i'));
-            $activeWorksheet->mergeCells('A2:F2');
+            $activeWorksheet->mergeCells('A2:H2');
             $activeWorksheet->getStyle('A2')->applyFromArray([
                 'font' => [
                     'size' => 8,
@@ -346,8 +350,10 @@ class ReportController extends Controller
             $activeWorksheet->setCellValue('C' . $startrow, 'Desa');
             $activeWorksheet->setCellValue('D' . $startrow, 'Blok Sensus');
             $activeWorksheet->setCellValue('E' . $startrow, 'Progres Pencacahan (Persen)');
-            $activeWorksheet->setCellValue('F' . $startrow, 'Kondisi sd Tanggal');
-            $activeWorksheet->getStyle('A' . $startrow . ':F' . $startrow)->applyFromArray([
+            $activeWorksheet->setCellValue('F' . $startrow, 'Sampel Berhasil Dicacah');
+            $activeWorksheet->setCellValue('G' . $startrow, 'Target Sampel');
+            $activeWorksheet->setCellValue('H' . $startrow, 'Kondisi sd Tanggal');
+            $activeWorksheet->getStyle('A' . $startrow . ':H' . $startrow)->applyFromArray([
                 'font' => [
                     'bold' => true,
                 ],
@@ -365,13 +371,15 @@ class ReportController extends Controller
                 $activeWorksheet->setCellValue('D' . $startrow, $row->short_code);
 
                 $activeWorksheet->setCellValue('E' . $startrow, $row->percentage);
-                $activeWorksheet->setCellValue('F' . $startrow, (new DateTime($row->date))->format('d M Y'));
-                $activeWorksheet->getStyle('E' . $startrow . ':F' . $startrow)->applyFromArray(['alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,],]);
+                $activeWorksheet->setCellValue('F' . $startrow, $row->success_sample);
+                $activeWorksheet->setCellValue('G' . $startrow, $row->total_sample);
+                $activeWorksheet->setCellValue('H' . $startrow, (new DateTime($row->date))->format('d M Y'));
+                $activeWorksheet->getStyle('E' . $startrow . ':H' . $startrow)->applyFromArray(['alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,],]);
 
                 $startrow++;
             }
 
-            foreach (range('A', 'F') as $columnID) {
+            foreach (range('A', 'H') as $columnID) {
                 $activeWorksheet->getColumnDimension($columnID)->setAutoSize(true);
             }
 
@@ -434,13 +442,14 @@ class ReportController extends Controller
             $activeWorksheet->setCellValue('E' . $startrow, 'No Sampel');
             $activeWorksheet->setCellValue('F' . $startrow, 'Nama');
             $activeWorksheet->setCellValue('G' . $startrow, 'Nama Pengelola');
-            $activeWorksheet->setCellValue('H' . $startrow, 'Tipe');
-            $activeWorksheet->setCellValue('I' . $startrow, 'Status');
-            $activeWorksheet->setCellValue('J' . $startrow, 'Pengganti');
-            $activeWorksheet->setCellValue('K' . $startrow, 'BS Sampel Pengganti');
-            $activeWorksheet->setCellValue('L' . $startrow, 'Komoditas');
+            $activeWorksheet->setCellValue('H' . $startrow, 'Petugas');
+            $activeWorksheet->setCellValue('I' . $startrow, 'Tipe');
+            $activeWorksheet->setCellValue('J' . $startrow, 'Status');
+            $activeWorksheet->setCellValue('K' . $startrow, 'Pengganti');
+            $activeWorksheet->setCellValue('L' . $startrow, 'BS Sampel Pengganti');
+            $activeWorksheet->setCellValue('M' . $startrow, 'Komoditas');
 
-            $activeWorksheet->getStyle('A' . $startrow . ':L' . $startrow)->applyFromArray([
+            $activeWorksheet->getStyle('A' . $startrow . ':M' . $startrow)->applyFromArray([
                 'font' => [
                     'bold' => true,
                 ],
@@ -460,16 +469,17 @@ class ReportController extends Controller
                 $activeWorksheet->setCellValue('E' . $startrow, $row->no);
                 $activeWorksheet->setCellValue('F' . $startrow, $row->name);
                 $activeWorksheet->setCellValue('G' . $startrow, $row->name_p);
-                $activeWorksheet->setCellValue('H' . $startrow, $row->type);
-                $activeWorksheet->setCellValue('I' . $startrow, $row->status->name);
-                $activeWorksheet->setCellValue('J' . $startrow, $row->replacement != null ? ('[' . $row->replacement->no . '] ' . $row->replacement->name) : '');
-                $activeWorksheet->setCellValue('K' . $startrow, $row->replacement != null ? $row->replacement->bs->long_code : '');
-                $activeWorksheet->setCellValue('L' . $startrow, implode(', ', $row->commodities->pluck('name')->toArray()));
+                $activeWorksheet->setCellValue('H' . $startrow, $row->user != null ? $row->user->name : '');
+                $activeWorksheet->setCellValue('I' . $startrow, $row->type);
+                $activeWorksheet->setCellValue('J' . $startrow, $row->status->name);
+                $activeWorksheet->setCellValue('K' . $startrow, $row->replacement != null ? ('[' . $row->replacement->no . '] ' . $row->replacement->name) : '');
+                $activeWorksheet->setCellValue('L' . $startrow, $row->replacement != null ? $row->replacement->bs->long_code : '');
+                $activeWorksheet->setCellValue('M' . $startrow, implode(', ', $row->commodities->pluck('name')->toArray()));
 
                 $startrow++;
             }
 
-            foreach (range('A', 'L') as $columnID) {
+            foreach (range('A', 'M') as $columnID) {
                 $activeWorksheet->getColumnDimension($columnID)->setAutoSize(true);
             }
 
