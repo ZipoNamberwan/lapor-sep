@@ -147,7 +147,7 @@
                 <label class="mt-4 form-control-label">Pilih Sampel Pengganti <span class="text-danger">*</span></label>
 
                 <div class="d-flex flex-wrap align-items-center mb-2">
-                    <p class="mb-1 text-muted mr-2" style="font-size: 0.8rem;">Apakah sampel dalam BS yang sama?</p>
+                    <p class="mb-1 text-muted mr-2" style="font-size: 0.8rem;">Apakah pengganti dalam BS yang sama?</p>
                     <label class="mb-1 custom-toggle">
                         <input id="samebs" type="checkbox" checked name="samebs">
                         <span class="custom-toggle-slider rounded-circle" data-label-off="Tidak" data-label-on="Ya"></span>
@@ -224,6 +224,7 @@
     var kodedata = null
     var selectedCommodities = []
     var samples = []
+    var selectedBS = null
 
     $(document).ready(function() {
         $('#subdistrict').on('change', function() {
@@ -483,6 +484,7 @@
             resultDiv.innerHTML = '';
         } else {
             $('#sampleChangeListsample').empty();
+            $('#sampleChangeListsample').append(`<option value="0" disabled selected> -- Pilih Sampel Pengganti -- </option>`);
         }
         $('#village' + (isSample ? 'sample' : '')).empty();
         $('#village' + (isSample ? 'sample' : '')).append(`<option value="0" disabled selected>Processing...</option>`);
@@ -492,9 +494,9 @@
             success: function(response) {
                 var response = JSON.parse(response);
                 $('#village' + (isSample ? 'sample' : '')).empty();
-                $('#village' + (isSample ? 'sample' : '')).append(`<option value="0" disabled selected>Pilih Desa</option>`);
+                $('#village' + (isSample ? 'sample' : '')).append(`<option value="0" disabled selected> -- Pilih Desa -- </option>`);
                 $('#bs' + (isSample ? 'sample' : '')).empty();
-                $('#bs' + (isSample ? 'sample' : '')).append(`<option value="0" disabled selected>Pilih Blok Sensus</option>`);
+                $('#bs' + (isSample ? 'sample' : '')).append(`<option value="0" disabled selected> -- Pilih Blok Sensus -- </option>`);
                 response.forEach(element => {
                     if (selectedvillage == String(element.id)) {
                         $('#village' + (isSample ? 'sample' : '')).append('<option value=\"' + element.id + '\" selected>' +
@@ -518,6 +520,7 @@
             resultDiv.innerHTML = '';
         } else {
             $('#sampleChangeListsample').empty();
+            $('#sampleChangeListsample').append(`<option value="0" disabled selected> -- Pilih Sampel Pengganti -- </option>`);
         }
         $('#bs' + (isSample ? 'sample' : '')).empty();
         $('#bs' + (isSample ? 'sample' : '')).append(`<option value="0" disabled selected>Processing...</option>`);
@@ -527,7 +530,7 @@
             success: function(response) {
                 var response = JSON.parse(response);
                 $('#bs' + (isSample ? 'sample' : '')).empty();
-                $('#bs' + (isSample ? 'sample' : '')).append(`<option value="0" disabled selected>Pilih Blok Sensus</option>`);
+                $('#bs' + (isSample ? 'sample' : '')).append(`<option value="0" disabled selected> -- Pilih Blok Sensus -- </option>`);
                 response.forEach(element => {
                     if (selectedbs == String(element.id)) {
                         $('#bs' + (isSample ? 'sample' : '')).append('<option value=\"' + element.id + '\" selected>' +
@@ -553,6 +556,9 @@
             type: 'GET',
             url: '/sample/' + id,
             success: function(response) {
+
+                selectedBS = id;
+
                 samples = []
                 var response = JSON.parse(response);
 
@@ -589,16 +595,27 @@
                                 </span>
                             </button>
                         ` :
-                            ''
+                            '';
 
-                        var rep = item.sample_id != null ? `<span style="font-size: 0.9rem">Digantikan oleh: <strong>(${item.sample_no}) ${item.sample_name}</strong></span>` : ''
+                        var bs = item.replacement != null ? item.replacement.bs.id != selectedBS ? (' dari BS lain: ** ' + item.replacement.area + ' (' + item.replacement.bs.long_code + ') **') : '' : '';
+                        var replacementicon = false ? '<i class="fas fa-dot-circle text-danger"></i> ' : '';
+                        var replacement = item.sample_id != null ?
+                            `<span style="font-size: 0.9rem">${replacementicon}Digantikan oleh: <strong>(${item.sample_no}) ${item.sample_name} ${bs}</strong></span>` : ''
+
+                        var bsreplacing = item.replacing.length > 0 ? item.replacing[0].bs.id != selectedBS ? (' dari BS lain: ** ' + item.replacing[0].area + ' (' + item.replacing[0].bs.long_code + ') **') : '' : '';
+                        var replacingicon = false ? '<i class="fas fa-dot-circle text-success"></i> ' : '';
+                        var replacing = item.replacing.length > 0 ? `<span style="font-size: 0.9rem">${replacingicon}Pengganti dari: <strong>(${item.replacing[0].no}) ${item.replacing[0].name} ${bsreplacing}</strong></span>` : ''
+
+                        var replacementicon = item.replacement != null ? '<i class="fas fa-arrow-alt-circle-down text-danger"></i>' : ''
+                        var replacingicon = item.replacing.length > 0 ? '<i class="fas fa-arrow-alt-circle-up text-success"></i>' : ''
 
                         itemDiv.innerHTML = `
                         <div class="mb-1">
-                            <h4 class="mb-1">(${item.no}) ${item.name}</h4>
+                            <h4 class="mb-1">(${item.no}) ${item.name} ${replacementicon} ${replacingicon}</h4>
                             <span class="mb-1" style="font-size: 0.9rem">${item.type}</span>
                             <p class="mb-1"><span class="badge badge-${item.color}">${item.status_name}</span></p>
-                            ${rep}
+                            ${replacement}
+                            ${replacing}
                         </div>
                         <div class="d-flex mb-1">
                             ${changeSample}
@@ -638,7 +655,7 @@
             success: function(response) {
                 var response = JSON.parse(response);
                 $('#sampleChangeListsample').empty()
-                $('#sampleChangeListsample').append(`<option value="0" disabled selected> --- Pilih Sampel Pengganti --- </option>`);
+                $('#sampleChangeListsample').append(`<option value="0" disabled selected> -- Pilih Sampel Pengganti -- </option>`);
                 response.forEach((sample) => {
                     if (sample.type == 'Cadangan' && sample.is_selected == 0) {
                         $('#sampleChangeListsample').append(`<option value="${sample.id}">(${sample.no}) ${sample.name}</option>`);
@@ -650,7 +667,6 @@
     }
 
     function showChangeSampleModal(item) {
-        console.log(item)
         event.stopPropagation()
         $('#changeSampleModal').modal('show');
 
@@ -663,6 +679,31 @@
                 </div>
             `;
 
+        document.getElementById('subdistrictsample').value = 0
+        const options = document.getElementById('subdistrictsample').options;
+        var opt = []
+        for (let i = 0; i < options.length; i++) {
+            if (i == 0) {
+                options[i].selected = true;
+            } else {
+                options[i].selected = false;
+            }
+            opt.push(options[i])
+        }
+        $('#subdistrictsample').empty()
+        for (let i = 0; i < opt.length; i++) {
+            $('#subdistrictsample').append(opt[i]);
+        }
+
+        $('#villagesample').empty()
+        $('#villagesample').append(`<option value="0" disabled selected> -- Pilih Desa -- </option>`);
+
+        $('#bssample').empty()
+        $('#bssample').append(`<option value="0" disabled selected> -- Pilih Blok Sensus -- </option>`);
+
+        $('#sampleChangeListsample').empty()
+        $('#sampleChangeListsample').append(`<option value="0" disabled selected> -- Pilih Sampel Pengganti -- </option>`);
+
         if (item.replacement != null) {
             if (item.replacement.bs_id == item.bs_id) {
                 document.getElementById('samebs').checked = true
@@ -670,15 +711,24 @@
             } else {
                 document.getElementById('samebs').checked = false
                 onChangeBs(false)
+
+                const options = document.getElementById('subdistrictsample').options;
+                for (let i = 0; i < options.length; i++) {
+                    if (options[i].value == item.replacement.subdistrict_id) {
+                        options[i].selected = true;
+                    }
+                }
+                loadVillage(true, item.replacement.subdistrict_id, item.replacement.village_id);
+                loadBs(true, item.replacement.village_id, item.replacement.bs_id);
+                loadChangeSample(item.replacement.bs_id);
             }
         } else {
             document.getElementById('samebs').checked = true
             onChangeBs(true)
         }
 
-
         $('#sampleChangeList').empty()
-        $('#sampleChangeList').append(`<option value="0" disabled selected> --- Pilih Sampel Pengganti --- </option>`);
+        $('#sampleChangeList').append(`<option value="0" disabled selected> -- Pilih Sampel Pengganti -- </option>`);
         samples.forEach((sample) => {
             if (sample.type == 'Cadangan' && sample.is_selected == 0) {
                 var sel = item.sample_id == sample.id ? 'selected' : ''
@@ -690,6 +740,7 @@
     }
 
     function updateModal(sample) {
+        // console.log(sample)
 
         document.getElementById('modaltitle').innerHTML = sample.name
         document.getElementById('modalsubtitle').innerHTML = sample.area
@@ -711,7 +762,7 @@
         document.getElementById('commodityselect').value = '0'
 
         $('#status').empty();
-        $('#status').append(`<option value="0" disabled> --- Pilih Status --- </option>`);
+        $('#status').append(`<option value="0" disabled> -- Pilih Status -- </option>`);
         statuses.forEach((st) => {
             var sel = st.id == sample.status_id ? 'selected' : ''
             $('#status').append(`<option ${sel} value="${st.id}">(${st.code}) ${st.name}</option>`);

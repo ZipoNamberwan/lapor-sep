@@ -32,13 +32,10 @@ class MainController extends Controller
     }
     public function getSample($id)
     {
-        // $samples = Sample::where('bs_id', $id)->where(function ($query) {
-        //     $query->where('type', 'Utama')
-        //         ->orWhere('is_selected', true);
-        // })->get();
-
         $samples = Sample::where('bs_id', $id)->orderBy('no')->get();
 
+        $tmpsamples = [];
+        $tmpreplacement = [];
         foreach ($samples as $sample) {
             $sample->status_name = $sample->status->name;
             $sample->color = $sample->status->color;
@@ -46,11 +43,48 @@ class MainController extends Controller
             $sample->sample_name = $sample->replacement != null ? $sample->replacement->name : null;
             $sample->sample_no = $sample->replacement != null ? $sample->replacement->no : null;
 
+            if ($sample->replacement != null) {
+                $sample->replacement->bs = $sample->replacement->bs;
+                $sample->replacement->area = ucwords(strtolower($sample->replacement->bs->village->subdistrict->name)) . ', ' .
+                    ucwords(strtolower($sample->replacement->bs->village->name)) . ', ' .
+                    $sample->replacement->bs->name;
+                $sample->replacement->subdistrict_id = $sample->replacement->bs->village->subdistrict->id;
+                $sample->replacement->village_id = $sample->replacement->bs->village->id;
+
+                $sample->replacement->status_name = $sample->replacement->status->name;
+                $sample->replacement->color = $sample->replacement->status->color;
+                $sample->replacement->commodities = $sample->replacement->commodities;
+                $sample->replacement->sample_name = $sample->replacement->replacement != null ? $sample->replacement->replacement->name : null;
+                $sample->replacement->sample_no = $sample->replacement->replacement != null ? $sample->replacement->replacement->no : null;
+
+                foreach ($sample->replacement->replacing as $replacing) {
+                    $replacing->bs = $replacing->bs;
+                    $replacing->area = ucwords(strtolower($replacing->bs->village->subdistrict->name)) . ', ' .
+                        ucwords(strtolower($replacing->bs->village->name)) . ', ' .
+                        $replacing->bs->name;
+                }
+
+                if ($sample->replacement->bs->id != $sample->bs->id) {
+                    $sample->replacement->type = 'Cadangan dari BS Lain';
+                    $tmpreplacement[] = $sample->replacement;
+                }
+            }
+
+            foreach ($sample->replacing as $replacing) {
+                $replacing->bs = $replacing->bs;
+                $replacing->area = ucwords(strtolower($replacing->bs->village->subdistrict->name)) . ', ' .
+                    ucwords(strtolower($replacing->bs->village->name)) . ', ' .
+                    $replacing->bs->name;
+            }
+
             $sample->area = ucwords(strtolower($sample->bs->village->subdistrict->name)) . ', ' .
                 ucwords(strtolower($sample->bs->village->name)) . ', ' .
                 $sample->bs->name;
+
+            $tmpsamples[] = $sample;
         }
-        return json_encode($samples);
+
+        return json_encode(array_merge($tmpsamples, $tmpreplacement));
     }
 
     function getPetugasData(Request $request, $id = null)
