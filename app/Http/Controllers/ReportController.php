@@ -72,16 +72,22 @@ class ReportController extends Controller
             $percentage = ReportRegency::where(['regency_long_code' => $user->regency->long_code])->where(['date' => $today])->first()->percentage;
             $data = ReportRegency::where(['regency_long_code' => $user->regency->long_code])->whereIn('date', $dates)->orderBy('date')->get()->pluck('percentage');
         } else {
-            $percentage = round(ReportRegency::where(['date' => $today])->get()->pluck('success_sample')->sum() /
-                ReportRegency::where(['date' => $today])->get()->pluck('total_sample')->sum() * 100, 2);
+            $success = ReportRegency::where(['date' => $today])->get()->pluck('success_sample')->sum();
+            $total = ReportRegency::where(['date' => $today])->get()->pluck('total_sample')->sum();
+            $percentage = 0;
+            if ($total != 0) {
+                $percentage = round($success / $total * 100, 2);
+            }
 
             foreach ($dates as $date) {
-                $p = ReportRegency::where(['date' => $date])->get()->pluck('percentage');
-                if (count($p) == 0) {
-                    $data[] = 0;
-                } else {
-                    $data[] = round($p->sum() / count($p), 2);
+                $success = ReportRegency::where(['date' => $date])->get()->pluck('success_sample')->sum();
+                $total = ReportRegency::where(['date' => $date])->get()->pluck('total_sample')->sum();
+                $percentage = 0;
+                if ($total != 0) {
+                    $percentage = round($success / $total * 100, 2);
                 }
+
+                $data[] = $percentage;
             }
         }
         return view('report/index', ['lastUpdate' => $lastUpdate, 'percentage' => $percentage, 'dates' => $dates, 'data' => $data]);

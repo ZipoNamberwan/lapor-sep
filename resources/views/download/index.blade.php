@@ -42,7 +42,7 @@
                             @method('post')
                             @csrf
                             <div class="row">
-                                <div class="col-4">
+                                <div class="col-md-4">
                                     <label class="form-control-label">Pilih Level <span class="text-danger">*</span></label>
                                     <select id="level" name="level" class="form-control" data-toggle="select" required>
                                         <option value="0" disabled selected> -- Pilih Level -- </option>
