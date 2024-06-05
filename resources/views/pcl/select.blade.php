@@ -146,9 +146,48 @@
                 </div>
                 <label class="mt-4 form-control-label">Pilih Sampel Pengganti <span class="text-danger">*</span></label>
 
-                <select id="sampleChangeList" class="form-control" data-toggle="select"></select>
-                <div id="sampleChangeError" style="display: none;" class="text-valid mt-2">
-                    Belum diisi
+                <div class="d-flex flex-wrap align-items-center mb-2">
+                    <p class="mb-1 text-muted mr-2" style="font-size: 0.8rem;">Apakah sampel dalam BS yang sama?</p>
+                    <label class="mb-1 custom-toggle">
+                        <input id="samebs" type="checkbox" checked name="samebs">
+                        <span class="custom-toggle-slider rounded-circle" data-label-off="Tidak" data-label-on="Ya"></span>
+                    </label>
+                </div>
+
+                <div id="changebssection" class="row" style="display: none;">
+                    <div class="col-md-12 mt-2">
+                        <label class="form-control-label">Kecamatan <span class="text-danger">*</span></label>
+                        <select id="subdistrictsample" name="subdistrictsample" class="form-control" data-toggle="select" required>
+                            <option value="0" disabled selected> -- Pilih Kecamatan -- </option>
+                            @foreach ($subdistricts as $subdistrict)
+                            <option value="{{ $subdistrict->id }}" {{ old('subdistrict') == $subdistrict->id ? 'selected' : '' }}>
+                                [{{ $subdistrict->short_code}}] {{ $subdistrict->name }}
+                            </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-12 mt-2">
+                        <label class="form-control-label">Desa <span class="text-danger">*</span></label>
+                        <select id="villagesample" name="villagesample" class="form-control" data-toggle="select"></select>
+                    </div>
+                    <div id="bs_div" class="col-md-12 mt-2 mb-4">
+                        <label class="form-control-label">Blok Sensus <span class="text-danger">*</span></label>
+                        <select id="bssample" name="bssample" class="form-control" data-toggle="select"></select>
+                    </div>
+                    <div class="col-md-12 mt-2">
+                        <label class="form-control-label">Pilih Sample Pengganti dari BS Lain <span class="text-danger">*</span></label>
+                        <select id="sampleChangeListsample" class="form-control" data-toggle="select"></select>
+                        <div id="sampleChangeErrorsample" style="display: none;" class="text-valid mt-2">
+                            Belum diisi
+                        </div>
+                    </div>
+                </div>
+
+                <div id="samebssection">
+                    <select id="sampleChangeList" class="form-control mt-2" data-toggle="select"></select>
+                    <div id="sampleChangeError" style="display: none;" class="text-valid mt-2">
+                        Belum diisi
+                    </div>
                 </div>
                 <div>
                     <p id="loading-change" style="visibility: hidden;" class="text-warning mt-3">Loading...</p>
@@ -188,13 +227,27 @@
 
     $(document).ready(function() {
         $('#subdistrict').on('change', function() {
-            loadVillage(null, null);
+            loadVillage(false, null, null);
         });
         $('#village').on('change', function() {
-            loadBs(null, null);
+            loadBs(false, null, null);
         });
         $('#bs').on('change', function() {
             loadSample(null);
+        });
+
+
+        $('#samebs').on('change', function() {
+            onChangeBs(document.getElementById('samebs').checked)
+        });
+        $('#subdistrictsample').on('change', function() {
+            loadVillage(true, null, null);
+        });
+        $('#villagesample').on('change', function() {
+            loadBs(true, null, null);
+        });
+        $('#bssample').on('change', function() {
+            loadChangeSample();
         });
 
         $.ajax({
@@ -227,6 +280,16 @@
 
         createTags()
     });
+
+    function onChangeBs(checked) {
+        if (checked) {
+            document.getElementById('changebssection').style.display = 'none'
+            document.getElementById('samebssection').style.display = 'block'
+        } else {
+            document.getElementById('changebssection').style.display = 'block'
+            document.getElementById('samebssection').style.display = 'none'
+        }
+    }
 
     function createTags() {
 
@@ -273,12 +336,22 @@
 
     function validateChange() {
 
+        issamebs = document.getElementById('samebs').checked;
         var replacement_valid = true
-        if (document.getElementById('sampleChangeList').value == 0 || document.getElementById('sampleChangeList').value == null) {
-            replacement_valid = false
-            document.getElementById('sampleChangeError').style.display = 'block'
+        if (issamebs) {
+            if (document.getElementById('sampleChangeList').value == 0 || document.getElementById('sampleChangeList').value == null) {
+                replacement_valid = false
+                document.getElementById('sampleChangeError').style.display = 'block'
+            } else {
+                document.getElementById('sampleChangeError').style.display = 'none'
+            }
         } else {
-            document.getElementById('sampleChangeError').style.display = 'none'
+            if (document.getElementById('sampleChangeListsample').value == 0 || document.getElementById('sampleChangeListsample').value == null) {
+                replacement_valid = false
+                document.getElementById('sampleChangeErrorsample').style.display = 'block'
+            } else {
+                document.getElementById('sampleChangeErrorsample').style.display = 'none'
+            }
         }
 
         return replacement_valid
@@ -286,13 +359,21 @@
 
     function onChange() {
         document.getElementById('sampleChangeError').style.display = 'none'
+        document.getElementById('sampleChangeErrorsample').style.display = 'none'
         if (validateChange()) {
             document.getElementById('loading-change').style.visibility = 'visible'
 
             id = document.getElementById('toreplace').value
-            var updateData = {
-                replacement: document.getElementById('sampleChangeList').value,
-            };
+            issamebs = document.getElementById('samebs').checked;
+            if (issamebs) {
+                var updateData = {
+                    replacement: document.getElementById('sampleChangeList').value,
+                };
+            } else {
+                var updateData = {
+                    replacement: document.getElementById('sampleChangeListsample').value,
+                };
+            }
 
             $.ajax({
                 url: `/petugas/edit/sample/${id}`,
@@ -392,30 +473,34 @@
         });
     }
 
-    function loadVillage(subdistrictid = null, selectedvillage = null) {
-        let id = $('#subdistrict').val();
+    function loadVillage(isSample = false, subdistrictid = null, selectedvillage = null) {
+        let id = $('#subdistrict' + (isSample ? 'sample' : '')).val();
         if (subdistrictid != null) {
             id = subdistrictid;
         }
-        const resultDiv = document.getElementById('samplelist');
-        resultDiv.innerHTML = '';
-        $('#village').empty();
-        $('#village').append(`<option value="0" disabled selected>Processing...</option>`);
+        if (!isSample) {
+            const resultDiv = document.getElementById('samplelist');
+            resultDiv.innerHTML = '';
+        } else {
+            $('#sampleChangeListsample').empty();
+        }
+        $('#village' + (isSample ? 'sample' : '')).empty();
+        $('#village' + (isSample ? 'sample' : '')).append(`<option value="0" disabled selected>Processing...</option>`);
         $.ajax({
             type: 'GET',
             url: '/desa/' + id,
             success: function(response) {
                 var response = JSON.parse(response);
-                $('#village').empty();
-                $('#village').append(`<option value="0" disabled selected>Pilih Desa</option>`);
-                $('#bs').empty();
-                $('#bs').append(`<option value="0" disabled selected>Pilih Blok Sensus</option>`);
+                $('#village' + (isSample ? 'sample' : '')).empty();
+                $('#village' + (isSample ? 'sample' : '')).append(`<option value="0" disabled selected>Pilih Desa</option>`);
+                $('#bs' + (isSample ? 'sample' : '')).empty();
+                $('#bs' + (isSample ? 'sample' : '')).append(`<option value="0" disabled selected>Pilih Blok Sensus</option>`);
                 response.forEach(element => {
                     if (selectedvillage == String(element.id)) {
-                        $('#village').append('<option value=\"' + element.id + '\" selected>' +
+                        $('#village' + (isSample ? 'sample' : '')).append('<option value=\"' + element.id + '\" selected>' +
                             '[' + element.short_code + '] ' + element.name + '</option>');
                     } else {
-                        $('#village').append('<option value=\"' + element.id + '\">' + '[' +
+                        $('#village' + (isSample ? 'sample' : '')).append('<option value=\"' + element.id + '\">' + '[' +
                             element.short_code + '] ' + element.name + '</option>');
                     }
                 });
@@ -423,28 +508,32 @@
         });
     }
 
-    function loadBs(villageid = null, selectedbs = null) {
-        let id = $('#village').val();
+    function loadBs(isSample = false, villageid = null, selectedbs = null) {
+        let id = $('#village' + (isSample ? 'sample' : '')).val();
         if (villageid != null) {
             id = villageid;
         }
-        const resultDiv = document.getElementById('samplelist');
-        resultDiv.innerHTML = '';
-        $('#bs').empty();
-        $('#bs').append(`<option value="0" disabled selected>Processing...</option>`);
+        if (!isSample) {
+            const resultDiv = document.getElementById('samplelist');
+            resultDiv.innerHTML = '';
+        } else {
+            $('#sampleChangeListsample').empty();
+        }
+        $('#bs' + (isSample ? 'sample' : '')).empty();
+        $('#bs' + (isSample ? 'sample' : '')).append(`<option value="0" disabled selected>Processing...</option>`);
         $.ajax({
             type: 'GET',
             url: '/bs/' + id,
             success: function(response) {
                 var response = JSON.parse(response);
-                $('#bs').empty();
-                $('#bs').append(`<option value="0" disabled selected>Pilih Blok Sensus</option>`);
+                $('#bs' + (isSample ? 'sample' : '')).empty();
+                $('#bs' + (isSample ? 'sample' : '')).append(`<option value="0" disabled selected>Pilih Blok Sensus</option>`);
                 response.forEach(element => {
                     if (selectedbs == String(element.id)) {
-                        $('#bs').append('<option value=\"' + element.id + '\" selected>' +
+                        $('#bs' + (isSample ? 'sample' : '')).append('<option value=\"' + element.id + '\" selected>' +
                             element.name + '</option>');
                     } else {
-                        $('#bs').append('<option value=\"' + element.id + '\">' +
+                        $('#bs' + (isSample ? 'sample' : '')).append('<option value=\"' + element.id + '\">' +
                             element.name + '</option>');
                     }
                 });
@@ -537,7 +626,31 @@
         });
     }
 
+    function loadChangeSample(bsid = null) {
+        let id = $('#bssample').val();
+        if (bsid != null) {
+            id = bsid;
+        }
+
+        $.ajax({
+            type: 'GET',
+            url: '/sample/' + id,
+            success: function(response) {
+                var response = JSON.parse(response);
+                $('#sampleChangeListsample').empty()
+                $('#sampleChangeListsample').append(`<option value="0" disabled selected> --- Pilih Sampel Pengganti --- </option>`);
+                response.forEach((sample) => {
+                    if (sample.type == 'Cadangan' && sample.is_selected == 0) {
+                        $('#sampleChangeListsample').append(`<option value="${sample.id}">(${sample.no}) ${sample.name}</option>`);
+                    }
+                })
+            },
+            error: function(jqXHR, textStatus, errorThrown) {}
+        });
+    }
+
     function showChangeSampleModal(item) {
+        console.log(item)
         event.stopPropagation()
         $('#changeSampleModal').modal('show');
 
@@ -549,6 +662,20 @@
                     <p class="mb-0"><span class="badge badge-${item.color}">${item.status_name}</span></p>
                 </div>
             `;
+
+        if (item.replacement != null) {
+            if (item.replacement.bs_id == item.bs_id) {
+                document.getElementById('samebs').checked = true
+                onChangeBs(true)
+            } else {
+                document.getElementById('samebs').checked = false
+                onChangeBs(false)
+            }
+        } else {
+            document.getElementById('samebs').checked = true
+            onChangeBs(true)
+        }
+
 
         $('#sampleChangeList').empty()
         $('#sampleChangeList').append(`<option value="0" disabled selected> --- Pilih Sampel Pengganti --- </option>`);
