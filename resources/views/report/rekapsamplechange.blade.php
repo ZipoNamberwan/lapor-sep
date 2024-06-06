@@ -36,46 +36,28 @@
                 <div class="card">
                     <!-- Card header -->
                     <div class="card-header">
-                        <h3 class="mb-0">[{{$bs->long_code}}] {{$bs->village->name}} {{$bs->short_code}}</h3>
+                        <h3 class="mb-0">Rekap Pergantian Sampel</h3>
                     </div>
                     <!-- Card body -->
-                    <div class="row">
+                    <div class="row my-2">
                         <div class="col-12" id="row-table">
                             <div class="table-responsive">
                                 <table class="table" id="datatable-id" width="100%">
                                     <thead class="thead-light">
                                         <tr>
                                             <th>Sampel</th>
+                                            <th>Wilayah</th>
+                                            <th>Sampel Pengganti</th>
+                                            <th>Wilayah Sample Pengganti</th>
                                             <th>Petugas</th>
-                                            <th>Status</th>
-                                            <th style="max-width: 400px;">Komoditas</th>
-                                            <th>Pengganti</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @foreach($samples as $sample)
                                         <tr>
-                                            <td>[{{$sample->no}}] {{$sample->name}}</td>
-                                            <td>
-                                                {{$sample->user != null ? $sample->user->name : ''}}</br>
-                                                {{$sample->user != null ? $sample->user->pml : ''}}
-                                            </td>
-                                            <td>
-                                                <p class="mb-1"><span class="badge badge-{{$sample->status->color}}">{{$sample->status->name}}</span></p>
-                                            </td>
-                                            <td>
-                                                @foreach($sample->commodities as $com)
-                                                <button class="mb-1 btn btn-sm btn-primary">{{$com->name}}</button>
-                                                @endforeach
-                                            </td>
-                                            <td>{{$sample->replacement != null ? $sample->replacement->name : '-'}}</br>
-                                                @if($sample->replacement != null)
-                                                @if($sample->bs_id != $sample->replacement->bs_id)
-                                                {{$sample->replacement->bs->long_code}}</br>
-                                                {{$sample->replacement->bs->village->name}}, {{$sample->replacement->bs->village->subdistrict->name}}, {{$sample->replacement->bs->name}}
-                                                @endif
-                                                @endif
-                                            </td>
+                                            <td>{{$sample->name}}</td>
+                                            <td>{{$sample->replacement->name}}</td>
+                                            <td>{{$sample->user != null ? $sample->user->name : ''}}</td>
                                         </tr>
                                         @endforeach
                                     </tbody>
@@ -96,4 +78,66 @@
 <script src="/assets/vendor/datatables2/datatables.min.js"></script>
 <script src="/assets/vendor/momentjs/moment-with-locales.js"></script>
 
+<script>
+    var table = $('#datatable-id').DataTable({
+        "order": [],
+        "data": @json($samples),
+        "columns": [{
+                "responsivePriority": 8,
+                "width": "10%",
+                "data": "name",
+                "render": function(data, type, row) {
+                    if (type === 'display') {
+                        return '<i class="fas fa-arrow-alt-circle-down text-danger"></i> ' + data + '<br/>';
+                    }
+                    return data;
+                }
+            },
+            {
+                "responsivePriority": 1,
+                "width": "5%",
+                "data": "area_name",
+                "render": function(data, type, row) {
+                    if (type === 'display') {
+                        return data + '</br>' + row.bs.long_code
+                    }
+                    return data + ' ' + row.bs.long_code;
+                }
+            },
+            {
+                "responsivePriority": 1,
+                "width": "10%",
+                "data": "replacement.name",
+                "render": function(data, type, row) {
+                    if (type === 'display') {
+                        return '<i class="fas fa-arrow-alt-circle-up text-success"></i> ' + data + '<br/>';
+                    }
+                    return data;
+                }
+            },
+            {
+                "responsivePriority": 1,
+                "width": "5%",
+                "data": "replacement.area_name",
+                "render": function(data, type, row) {
+                    if (type === 'display') {
+                        return data + '</br>' + row.replacement.bs.long_code
+                    }
+                    return data + ' ' + row.replacement.bs.long_code;
+                }
+            },
+            {
+                "responsivePriority": 1,
+                "width": "10%",
+                "data": "user.name",
+            },
+        ],
+        "language": {
+            'paginate': {
+                'previous': '<i class="fas fa-angle-left"></i>',
+                'next': '<i class="fas fa-angle-right"></i>'
+            }
+        }
+    });
+</script>
 @endsection

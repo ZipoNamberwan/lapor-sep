@@ -28,6 +28,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/bs/{id}', [MainController::class, 'getBs']);
     Route::get('/sample/{id}', [MainController::class, 'getSample']);
     Route::get('/petugas/data/{id?}', [MainController::class, 'getPetugasData']);
+    Route::get('/rekap-ganti-sample', [MainController::class, 'getRekapSampleChange']);
 
     Route::group(['middleware' => ['role:adminprov|adminkab']], function () {
         // Route::get('/generate', [ReportController::class, 'generate']);

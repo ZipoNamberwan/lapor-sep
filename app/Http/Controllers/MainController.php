@@ -195,69 +195,32 @@ class MainController extends Controller
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
+    function getRekapSampleChange()
     {
-        //
-    }
+        $user = User::find(Auth::user()->id);
+        $samples = [];
+        if ($user->hasRole('pcl')) {
+            $samples = Sample::where(['user_id' => $user->id])->where('sample_id', '!=', null)->get();
+        } else if ($user->hasRole('adminkab')) {
+            $samples = Sample::where('sample_id', '!=', null)->whereHas('bs', function ($query) use ($user) {
+                $query->where('long_code', 'LIKE', $user->regency->long_code . '%');
+            })->get();
+        } else if ($user->hasRole('adminprov')) {
+            $samples = Sample::where('sample_id', '!=', null)->get();
+        }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+        foreach ($samples as $sample) {
+            $sample->area_name = $sample->bs->village->subdistrict->regency->name . ' ' .
+                $sample->bs->village->subdistrict->name . ' ' .
+                $sample->bs->village->name . ' ' .
+                $sample->bs->name;
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        //
-    }
+            $sample->replacement->area_name = $sample->replacement->bs->village->subdistrict->regency->name . ' ' .
+                $sample->replacement->bs->village->subdistrict->name . ' ' .
+                $sample->replacement->bs->village->name . ' ' .
+                $sample->replacement->bs->name;
+        }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        //
+        return view('report/rekapsamplechange', ['samples' => $samples]);
     }
 }

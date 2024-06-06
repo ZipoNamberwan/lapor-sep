@@ -101,6 +101,15 @@
                         </li>
                         @endhasrole
 
+                        <li class="nav-item">
+                            <a class="nav-link @if(substr_count(url()->current(), 'rekap-ganti-sample') == 1) active @endif" href="/rekap-ganti-sample">
+                                <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                                    <i class="fas fa-list text-info text-sm opacity-10"></i>
+                                </div>
+                                <span class="nav-link-text ms-1">Rekap Pergantian Sampel</span>
+                            </a>
+                        </li>
+
                         @hasrole('adminkab|adminprov')
                         <li class="nav-item">
                             <a class="nav-link @if(substr_count(url()->current(), 'download') == 1) active @endif" href="/download">
