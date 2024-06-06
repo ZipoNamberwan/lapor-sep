@@ -14,7 +14,7 @@ return new class extends Migration
     public function up()
     {
         Schema::table('samples', function (Blueprint $table) {
-            $table->date('transfered')->nullable();
+            $table->dateTime('transfered')->nullable();
         });
     }
 
