@@ -405,28 +405,15 @@ class ReportController extends Controller
             $writer->save('php://output');
             exit;
         } else if ($request->level == 'sample') {
-            $rows = null;
-
-            if ($user->hasRole('adminkab')) {
-                $area_code = $user->regency->long_code;
-                $rows = Sample::whereHas('bs', function ($query) use ($area_code) {
-                    $query->where('long_code', 'LIKE', $area_code . '%');
-                })->where(function ($query) {
-                    $query->where('is_selected', true)
-                        ->orWhere('type', 'Utama');
-                })->orderBy('bs_id')->orderBy('no')->get();
-            } else if ($user->hasRole('adminprov')) {
-                $rows = Sample::where(function ($query) {
-                    $query->where('is_selected', true)
-                        ->orWhere('type', 'Utama');
-                })->where('status_id', '!=', 1)->orderBy('bs_id')->orderBy('no')->get();
-            }
-
+            ini_set('memory_limit', '512M');
+            ini_set('max_execution_time', 300);
+            
             $spreadsheet = new Spreadsheet();
             $activeWorksheet = $spreadsheet->getActiveSheet();
 
+            // Set headers
             $activeWorksheet->setCellValue('A1', 'Progres Pencacahan SEP Menurut Sampel di ' . $area);
-            $activeWorksheet->mergeCells('A1:L1');
+            $activeWorksheet->mergeCells('A1:M1');
             $activeWorksheet->getStyle('A1')->applyFromArray([
                 'font' => [
                     'bold' => true,
@@ -439,19 +426,8 @@ class ReportController extends Controller
             ]);
 
             $startrow = 3;
-            $activeWorksheet->setCellValue('A' . $startrow, 'Kabupaten');
-            $activeWorksheet->setCellValue('B' . $startrow, 'Kecamatan');
-            $activeWorksheet->setCellValue('C' . $startrow, 'Desa');
-            $activeWorksheet->setCellValue('D' . $startrow, 'Blok Sensus');
-            $activeWorksheet->setCellValue('E' . $startrow, 'No Sampel');
-            $activeWorksheet->setCellValue('F' . $startrow, 'Nama');
-            $activeWorksheet->setCellValue('G' . $startrow, 'Nama Pengelola');
-            $activeWorksheet->setCellValue('H' . $startrow, 'Petugas');
-            $activeWorksheet->setCellValue('I' . $startrow, 'Tipe');
-            $activeWorksheet->setCellValue('J' . $startrow, 'Status');
-            $activeWorksheet->setCellValue('K' . $startrow, 'Pengganti');
-            $activeWorksheet->setCellValue('L' . $startrow, 'BS Sampel Pengganti');
-            $activeWorksheet->setCellValue('M' . $startrow, 'Komoditas');
+            $headers = ['Kabupaten', 'Kecamatan', 'Desa', 'Blok Sensus', 'No Sampel', 'Nama', 'Nama Pengelola', 'Petugas', 'Tipe', 'Status', 'Pengganti', 'BS Sampel Pengganti', 'Komoditas'];
+            $activeWorksheet->fromArray($headers, NULL, 'A' . $startrow);
 
             $activeWorksheet->getStyle('A' . $startrow . ':M' . $startrow)->applyFromArray([
                 'font' => [
@@ -464,36 +440,50 @@ class ReportController extends Controller
             ]);
             $startrow++;
 
-            foreach ($rows as $row) {
-
-                $activeWorksheet->setCellValue('A' . $startrow, '[' . $row->bs->village->subdistrict->regency->short_code . '] ' . $row->bs->village->subdistrict->regency->name);
-                $activeWorksheet->setCellValue('B' . $startrow, '[' . $row->bs->village->subdistrict->short_code . '] ' . $row->bs->village->subdistrict->name);
-                $activeWorksheet->setCellValue('C' . $startrow, '[' . $row->bs->village->short_code . '] ' . $row->bs->village->name);
-                $activeWorksheet->setCellValue('D' . $startrow, $row->bs->short_code);
-                $activeWorksheet->setCellValue('E' . $startrow, $row->no);
-                $activeWorksheet->setCellValue('F' . $startrow, $row->name);
-                $activeWorksheet->setCellValue('G' . $startrow, $row->name_p);
-                $activeWorksheet->setCellValue('H' . $startrow, $row->user != null ? $row->user->name : '');
-                $activeWorksheet->setCellValue('I' . $startrow, $row->type);
-                $activeWorksheet->setCellValue('J' . $startrow, $row->status->name);
-                $activeWorksheet->setCellValue('K' . $startrow, $row->replacement != null ? ('[' . $row->replacement->no . '] ' . $row->replacement->name) : '');
-                $activeWorksheet->setCellValue('L' . $startrow, $row->replacement != null ? $row->replacement->bs->long_code : '');
-                $activeWorksheet->setCellValue('M' . $startrow, implode(', ', $row->commodities->pluck('name')->toArray()));
-
-                $startrow++;
+            // Define the base query
+            if ($user->hasRole('adminkab')) {
+                $area_code = $user->regency->long_code;
+                $query = Sample::whereHas('bs', function ($query) use ($area_code) {
+                    $query->where('long_code', 'LIKE', $area_code . '%');
+                })->where(function ($query) {
+                    $query->where('is_selected', true)
+                        ->orWhere('type', 'Utama');
+                })->orderBy('bs_id')->orderBy('no');
+            } else if ($user->hasRole('adminprov')) {
+                $query = Sample::where(function ($query) {
+                    $query->where('is_selected', true)
+                        ->orWhere('type', 'Utama');
+                })->where('status_id', '!=', 1)->orderBy('bs_id')->orderBy('no');
             }
+
+            // Process data in chunks
+            $query->chunk(1000, function ($rows) use (&$startrow, $activeWorksheet) {
+                foreach ($rows as $row) {
+                    $activeWorksheet->setCellValue('A' . $startrow, '[' . $row->bs->village->subdistrict->regency->short_code . '] ' . $row->bs->village->subdistrict->regency->name);
+                    $activeWorksheet->setCellValue('B' . $startrow, '[' . $row->bs->village->subdistrict->short_code . '] ' . $row->bs->village->subdistrict->name);
+                    $activeWorksheet->setCellValue('C' . $startrow, '[' . $row->bs->village->short_code . '] ' . $row->bs->village->name);
+                    $activeWorksheet->setCellValue('D' . $startrow, $row->bs->short_code);
+                    $activeWorksheet->setCellValue('E' . $startrow, $row->no);
+                    $activeWorksheet->setCellValue('F' . $startrow, $row->name);
+                    $activeWorksheet->setCellValue('G' . $startrow, $row->name_p);
+                    $activeWorksheet->setCellValue('H' . $startrow, $row->user != null ? $row->user->name : '');
+                    $activeWorksheet->setCellValue('I' . $startrow, $row->type);
+                    $activeWorksheet->setCellValue('J' . $startrow, $row->status->name);
+                    $activeWorksheet->setCellValue('K' . $startrow, $row->replacement != null ? ('[' . $row->replacement->no . '] ' . $row->replacement->name) : '');
+                    $activeWorksheet->setCellValue('L' . $startrow, $row->replacement != null ? $row->replacement->bs->long_code : '');
+                    $activeWorksheet->setCellValue('M' . $startrow, implode(', ', $row->commodities->pluck('name')->toArray()));
+
+                    $startrow++;
+                }
+            });
 
             foreach (range('A', 'M') as $columnID) {
                 $activeWorksheet->getColumnDimension($columnID)->setAutoSize(true);
             }
 
-            // Create a Writer to save the spreadsheet as an Excel file
             $writer = new Xlsx($spreadsheet);
+            $filename = 'Progres_Ruta_' . $area . '.xlsx';
 
-            // Prepare the file for download
-            $filename = 'Progres Ruta ' . $area . '.xlsx';
-
-            // Clear any output buffering
             if (ob_get_contents()) {
                 ob_end_clean();
             }
