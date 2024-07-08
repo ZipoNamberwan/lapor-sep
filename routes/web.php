@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminKabController;
+use App\Http\Controllers\EdcodController;
 use App\Http\Controllers\MainController;
 use App\Http\Controllers\PclController;
 use App\Http\Controllers\ProfileController;
@@ -30,6 +31,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/petugas/data/{id?}', [MainController::class, 'getPetugasData']);
     Route::get('/rekap-ganti-sample', [MainController::class, 'getRekapSampleChange']);
 
+    Route::get('/bsedcod/{kec}', [MainController::class, 'getBsEdcod']);
+    Route::post('/bsedcod/{id}', [MainController::class, 'saveEdcod']);
+
     Route::group(['middleware' => ['role:adminprov|adminkab']], function () {
         // Route::get('/generate', [ReportController::class, 'generate']);
 
@@ -47,6 +51,10 @@ Route::middleware('auth')->group(function () {
         Route::resource('users', UserController::class);
         Route::get('/download', [ReportController::class, 'showDownload']);
         Route::post('/download', [ReportController::class, 'download']);
+
+        //editing coding route
+        Route::get('/edcod/input', [EdcodController::class, 'input']);
+
     });
     Route::group(['middleware' => ['role:pml|pcl']], function () {
         Route::get('/petugas', [PclController::class, 'index']);

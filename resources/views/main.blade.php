@@ -101,6 +101,33 @@
                         </li>
                         @endhasrole
 
+                        @hasrole('adminkab|adminprov')
+                        <li class="nav-item">
+                            <a class="nav-link @if((substr_count(url()->current(), 'edcod/input') == 1) || (substr_count(url()->current(), 'edcod/report') == 1)) active @endif" href="#navbar-components-2" data-toggle="collapse" role="button" aria-expanded="@if((substr_count(url()->current(), 'edcod/input') == 1) || (substr_count(url()->current(), 'edcod/report') == 1)) true @else false @endif" aria-controls="navbar-components-2">
+                                <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                                    <i class="fas fa-edit text-warning text-sm opacity-10"></i>
+                                </div>
+                                <span class="nav-link-text">Editing Coding</span>
+                            </a>
+                            <div class="collapse @if((substr_count(url()->current(), 'edcod/input') == 1) || (substr_count(url()->current(), 'edcod/report') == 1)) show @endif" id="navbar-components-2">
+                                <ul class="nav nav-sm flex-column">
+                                    <li class="nav-item">
+                                        <a class="nav-link @if(substr_count(url()->current(), 'edcod/input') == 1) active @endif" href="/edcod/input">
+                                            <span class="nav-link-text ms-1">Input Progres</span>
+                                        </a>
+                                    </li>
+                                    @hasrole('adminkab')
+                                    <li class="nav-item">
+                                        <a class="nav-link @if(substr_count(url()->current(), 'edcod/report') == 1) active @endif" href="/edcod/report">
+                                            <span class="nav-link-text ms-1">Report</span>
+                                        </a>
+                                    </li>
+                                    @endhasrole
+                                </ul>
+                            </div>
+                        </li>
+                        @endhasrole
+
                         <li class="nav-item">
                             <a class="nav-link @if(substr_count(url()->current(), 'rekap-ganti-sample') == 1) active @endif" href="/rekap-ganti-sample">
                                 <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">

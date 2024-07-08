@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Bs;
+use App\Models\BsEdcod;
 use App\Models\Sample;
+use App\Models\Subdistrict;
 use App\Models\User;
 use App\Models\Village;
 use Illuminate\Http\Request;
@@ -222,5 +224,27 @@ class MainController extends Controller
         }
 
         return view('report/rekapsamplechange', ['samples' => $samples]);
+    }
+
+    function getBsEdcod($kec)
+    {
+        $kec = Subdistrict::find($kec);
+
+        $bsEdcod = BsEdcod::where('long_code', 'like', $kec->long_code . '%')->get();
+        foreach ($bsEdcod as $bs) {
+            $bs->village_name = $bs->bs->village->name;
+            $bs->village_code = $bs->bs->village->short_code;
+        }
+        return json_encode($bsEdcod);
+    }
+
+    function saveEdcod($id, Request $request)
+    {
+        $bsedcod = BsEdcod::find($id);
+        $response = $bsedcod->update([
+            'edcoded' => $request->value
+        ]);
+
+        return $response;
     }
 }
