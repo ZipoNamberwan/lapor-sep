@@ -102,9 +102,14 @@
                 resultDiv.innerHTML = '';
 
                 const titleDiv = document.createElement('h4')
-                titleDiv.className = 'mt-4 mb-4'
+                titleDiv.className = 'mt-4'
                 titleDiv.innerHTML = 'Daftar Sampel Blok Sensus'
                 resultDiv.appendChild(titleDiv)
+                const subTitleDiv = document.createElement('p')
+                subTitleDiv.className = 'mb-4'
+                subTitleDiv.style = 'font-size: 0.9rem'
+                subTitleDiv.innerHTML = 'Isikan jumlah sampel yang <span style="font-weight: bold">SUDAH SELESAI</span> editing coding'
+                resultDiv.appendChild(subTitleDiv)
 
                 response.forEach(bs => {
 
