@@ -53,7 +53,8 @@ class ReportController extends Controller
         $data = [];
 
         $startDate = new DateTime('2024-06-01');
-        $endDate = new DateTime($today);
+        // $endDate = new DateTime($today);
+        $endDate = new DateTime('2024-07-05');
 
         // Include the end date in the loop
         $endDate->modify('+1 day');

@@ -223,6 +223,13 @@ class MainController extends Controller
                 $sample->replacement->bs->name;
         }
 
+        // $diff = [];
+        // foreach ($samples as $sample) {
+        //     if ($sample->bs->id != $sample->replacement->bs->id) {
+        //         $diff[] = $sample;
+        //     }
+        // }
+
         return view('report/rekapsamplechange', ['samples' => $samples]);
     }
 
@@ -240,7 +247,21 @@ class MainController extends Controller
 
     function saveEdcod($id, Request $request)
     {
+        if (!is_numeric($request->value)) {
+            return response()->json(['error' => 'Nilai tidak valid'], 400);
+        }
+
+        if ($request->value < 0) {
+            return response()->json(['error' => 'Tidak Boleh Negatif'], 400);
+        }
+
         $bsedcod = BsEdcod::find($id);
+        $samples = Sample::where('bs_id', $bsedcod->bs->id)->where('status_id', '=', 9)->get();
+
+        if ($request->value > count($samples)) {
+            return response()->json(['error' => 'Sampel yg berhasil dicacah ' . count($samples)], 400);
+        }
+
         $response = $bsedcod->update([
             'edcoded' => $request->value
         ]);

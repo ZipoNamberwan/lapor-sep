@@ -111,18 +111,18 @@
                             </a>
                             <div class="collapse @if((substr_count(url()->current(), 'edcod/input') == 1) || (substr_count(url()->current(), 'edcod/report') == 1)) show @endif" id="navbar-components-2">
                                 <ul class="nav nav-sm flex-column">
+                                    @hasrole('adminkab')
                                     <li class="nav-item">
                                         <a class="nav-link @if(substr_count(url()->current(), 'edcod/input') == 1) active @endif" href="/edcod/input">
                                             <span class="nav-link-text ms-1">Input Progres</span>
                                         </a>
                                     </li>
-                                    @hasrole('adminkab')
+                                    @endhasrole
                                     <li class="nav-item">
                                         <a class="nav-link @if(substr_count(url()->current(), 'edcod/report') == 1) active @endif" href="/edcod/report">
                                             <span class="nav-link-text ms-1">Report</span>
                                         </a>
                                     </li>
-                                    @endhasrole
                                 </ul>
                             </div>
                         </li>

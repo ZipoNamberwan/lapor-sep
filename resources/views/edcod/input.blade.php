@@ -108,7 +108,7 @@
 
                 response.forEach(bs => {
 
-                    const itemDiv = document.createElement('row');
+                    const itemDiv = document.createElement('div');
                     itemDiv.className = 'bg-white rounded d-flex flex-wrap align-items-center mb-1';
 
                     itemDiv.innerHTML = `
@@ -119,12 +119,21 @@
                         </div>
                     `
 
-                    const input = itemDiv.querySelector('input');
+                    const input = itemDiv.querySelector(`#input${bs.id}`);
                     input.addEventListener('keydown', (event) => {
-                        console.log('sdasd')
-                        if (event.key === 'Tab' || event.key === 'ArrowDown' || event.key === 'Enter') {
+                        const keysToPrevent = ['Tab', 'ArrowDown', 'ArrowUp', 'Enter'];
+                        if (keysToPrevent.includes(event.key)) {
                             event.preventDefault();
-                            const nextInput = resultDiv.querySelector(`input#input${bs.id + 1}`);
+                            const inputs = resultDiv.querySelectorAll('input[type="number"]');
+                            const currentIndex = Array.prototype.indexOf.call(inputs, input);
+
+                            let nextInput;
+                            if (event.key === 'Tab' || event.key === 'ArrowDown' || event.key === 'Enter') {
+                                nextInput = inputs[currentIndex + 1];
+                            } else if (event.key === 'ArrowUp') {
+                                nextInput = inputs[currentIndex - 1];
+                            }
+
                             if (nextInput) {
                                 nextInput.focus();
                             }
@@ -179,9 +188,11 @@
             },
             error: function(xhr, status, error) {
 
+                var message = xhr.responseJSON != null ? xhr.responseJSON.error : "Gagal"
+
                 indicator.className = ''
                 indicator.classList.add('text-danger');
-                indicator.innerHTML = 'Gagal'
+                indicator.innerHTML = message
 
                 input.className = 'form-control mb-1'
                 input.classList.add('is-invalid');
