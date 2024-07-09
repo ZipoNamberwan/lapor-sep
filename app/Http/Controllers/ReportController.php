@@ -19,6 +19,7 @@ use App\Models\User;
 use DateInterval;
 use DatePeriod;
 use DateTime;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -37,114 +38,131 @@ class ReportController extends Controller
             abort(403);
         }
 
-        $lastUpdate = LastUpdate::latest()->first();
-        if ($lastUpdate != null) {
-            $lastUpdate = $lastUpdate->created_at->addHours(7)->format('j M Y H:i');
-        } else {
-            $lastUpdate = '';
-        }
-
-        $datetime = new DateTime();
-        $datetime->modify('+7 hours');
-        $today = $datetime->format('Y-m-d');
-
-        $user = User::find(Auth::user()->id);
-        $percentage = 0;
-        $dates = [];
-        $dates_edcod = [];
-        $data = [];
-        $data_edcod = [];
-
-        $startDate = new DateTime('2024-06-01');
-        // $endDate = new DateTime($today);
-        $endDate = new DateTime('2024-07-05');
-
-        // Include the end date in the loop
-        $endDate->modify('+1 day');
-
-        $period = new DatePeriod(
-            $startDate,
-            new DateInterval('P1D'),
-            $endDate
-        );
-
-        foreach ($period as $date) {
-            $dates[] = $date->format("Y-m-d");
-        }
-
-        $startDate = new DateTime('2024-07-09');
-        $endDate = new DateTime($today);
-        // $endDate = new DateTime('2024-07-05');
-
-        // Include the end date in the loop
-        $endDate->modify('+1 day');
-
-        $period = new DatePeriod(
-            $startDate,
-            new DateInterval('P1D'),
-            $endDate
-        );
-
-        foreach ($period as $date) {
-            $dates_edcod[] = $date->format("Y-m-d");
-        }
-
-        if ($user->hasRole('adminkab')) {
-            $percentage = ReportRegency::where(['regency_long_code' => $user->regency->long_code])->where(['date' => $today])->first()->percentage;
-            $data = ReportRegency::where(['regency_long_code' => $user->regency->long_code])->whereIn('date', $dates)->orderBy('date')->get()->pluck('percentage');
-
-            $percentage_edcod = ReportRegencyEdcod::where(['regency_long_code' => $user->regency->long_code])->where(['date' => $today])->first()->percentage;
-            $data_edcod = ReportRegencyEdcod::where(['regency_long_code' => $user->regency->long_code])->whereIn('date', $dates_edcod)->orderBy('date')->get()->pluck('percentage');
-        } else {
-            $success = ReportRegency::where(['date' => $today])->get()->pluck('success_sample')->sum();
-            $total = ReportRegency::where(['date' => $today])->get()->pluck('total_sample')->sum();
-            $percentage = 0;
-            if ($total != 0) {
-                $percentage = round($success / $total * 100, 2);
+        try {
+            $lastUpdate = LastUpdate::latest()->first();
+            if ($lastUpdate != null) {
+                $lastUpdate = $lastUpdate->created_at->addHours(7)->format('j M Y H:i');
+            } else {
+                $lastUpdate = '';
             }
 
-            foreach ($dates as $date) {
-                $success = ReportRegency::where(['date' => $date])->get()->pluck('success_sample')->sum();
-                $total = ReportRegency::where(['date' => $date])->get()->pluck('total_sample')->sum();
+            $datetime = new DateTime();
+            $datetime->modify('+7 hours');
+            $today = $datetime->format('Y-m-d');
+
+            $user = User::find(Auth::user()->id);
+            $percentage = 0;
+            $dates = [];
+            $dates_edcod = [];
+            $data = [];
+            $data_edcod = [];
+
+            $startDate = new DateTime('2024-06-01');
+            // $endDate = new DateTime($today);
+            $endDate = new DateTime('2024-07-05');
+
+            // Include the end date in the loop
+            $endDate->modify('+1 day');
+
+            $period = new DatePeriod(
+                $startDate,
+                new DateInterval('P1D'),
+                $endDate
+            );
+
+            foreach ($period as $date) {
+                $dates[] = $date->format("Y-m-d");
+            }
+
+            $startDate = new DateTime('2024-07-09');
+            $endDate = new DateTime($today);
+            // $endDate = new DateTime('2024-07-05');
+
+            // Include the end date in the loop
+            $endDate->modify('+1 day');
+
+            $period = new DatePeriod(
+                $startDate,
+                new DateInterval('P1D'),
+                $endDate
+            );
+
+            foreach ($period as $date) {
+                $dates_edcod[] = $date->format("Y-m-d");
+            }
+
+            if ($user->hasRole('adminkab')) {
+                $percentage = ReportRegency::where(['regency_long_code' => $user->regency->long_code])->where(['date' => $today])->first()->percentage;
+                $data = ReportRegency::where(['regency_long_code' => $user->regency->long_code])->whereIn('date', $dates)->orderBy('date')->get()->pluck('percentage');
+
+                $percentage_edcod = ReportRegencyEdcod::where(['regency_long_code' => $user->regency->long_code])->where(['date' => $today])->first()->percentage;
+                $data_edcod = ReportRegencyEdcod::where(['regency_long_code' => $user->regency->long_code])->whereIn('date', $dates_edcod)->orderBy('date')->get()->pluck('percentage');
+            } else {
+                $success = ReportRegency::where(['date' => $today])->get()->pluck('success_sample')->sum();
+                $total = ReportRegency::where(['date' => $today])->get()->pluck('total_sample')->sum();
                 $percentage = 0;
                 if ($total != 0) {
                     $percentage = round($success / $total * 100, 2);
                 }
 
-                $data[] = $percentage;
-            }
+                foreach ($dates as $date) {
+                    $success = ReportRegency::where(['date' => $date])->get()->pluck('success_sample')->sum();
+                    $total = ReportRegency::where(['date' => $date])->get()->pluck('total_sample')->sum();
+                    $percentage = 0;
+                    if ($total != 0) {
+                        $percentage = round($success / $total * 100, 2);
+                    }
+
+                    $data[] = $percentage;
+                }
 
 
-            $success = ReportRegencyEdcod::where(['date' => $today])->get()->pluck('success_sample')->sum();
-            $total = ReportRegencyEdcod::where(['date' => $today])->get()->pluck('total_sample')->sum();
-            $percentage_edcod = 0;
-            if ($total != 0) {
-                $percentage_edcod = round($success / $total * 100, 2);
-            }
-
-            foreach ($dates_edcod as $date) {
-                $success = ReportRegencyEdcod::where(['date' => $date])->get()->pluck('success_sample')->sum();
-                $total = ReportRegencyEdcod::where(['date' => $date])->get()->pluck('total_sample')->sum();
+                $success = ReportRegencyEdcod::where(['date' => $today])->get()->pluck('success_sample')->sum();
+                $total = ReportRegencyEdcod::where(['date' => $today])->get()->pluck('total_sample')->sum();
                 $percentage_edcod = 0;
                 if ($total != 0) {
                     $percentage_edcod = round($success / $total * 100, 2);
                 }
 
-                $data_edcod[] = $percentage_edcod;
+                foreach ($dates_edcod as $date) {
+                    $success = ReportRegencyEdcod::where(['date' => $date])->get()->pluck('success_sample')->sum();
+                    $total = ReportRegencyEdcod::where(['date' => $date])->get()->pluck('total_sample')->sum();
+                    $percentage_edcod = 0;
+                    if ($total != 0) {
+                        $percentage_edcod = round($success / $total * 100, 2);
+                    }
+
+                    $data_edcod[] = $percentage_edcod;
+                }
             }
+            return view(
+                'report/index',
+                [
+                    'success' => true,
+                    'lastUpdate' => $lastUpdate,
+                    'percentage' => $percentage,
+                    'data' => $data,
+                    'dates' => $dates,
+                    'percentage_edcod' => $percentage_edcod,
+                    'data_edcod' => $data_edcod,
+                    'dates_edcod' => $dates_edcod,
+                ]
+            );
+        } catch (Exception $e) {
+            return view(
+                'report/index',
+                [
+                    'success' => false,
+                    'lastUpdate' => '-',
+                    'percentage' => 0,
+                    'data' => [],
+                    'dates' => [],
+                    'percentage_edcod' => 0,
+                    'data_edcod' => [],
+                    'dates_edcod' => [],
+                ]
+            );
         }
-        return view(
-            'report/index',
-            [
-                'lastUpdate' => $lastUpdate,
-                'percentage' => $percentage,
-                'data' => $data,
-                'dates' => $dates,
-                'percentage_edcod' => $percentage_edcod,
-                'data_edcod' => $data_edcod,
-                'dates_edcod' => $dates_edcod,
-            ]
-        );
     }
 
     function reportKab()

@@ -28,6 +28,7 @@
 
 <div class="container-fluid mt--6">
 
+    @if($success)
     <div class="row">
         <div class="col-xl-4 col-md-6">
             <div class="card card-stats">
@@ -148,6 +149,19 @@
             </div>
         </div>
     </div>
+    @else
+    <div class="row">
+        <div class="col">
+            <div class="card-wrapper">
+                <!-- Custom form validation -->
+                <div class="card d-flex align-items-center justify-content-center" style="height: 400px;">
+                    <h1><i class="ni ni-atom" style="font-size: 8rem;"></i></h1>
+                    <h1>Data Report Sedang Diproses, Silakan Refresh dalam Beberapa Saat</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
 </div>
 @endsection
 
