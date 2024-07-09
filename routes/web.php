@@ -44,6 +44,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/report/bs/{kodekec}', [ReportController::class, 'reportBs']);
         Route::get('/report/ruta/{kodebs}', [ReportController::class, 'reportRuta']);
 
+        Route::get('/report/edcod/kab', [ReportController::class, 'reportEdcodKab']);
+        Route::get('/report/edcod/kec/{kodekab}', [ReportController::class, 'reportEdcodKec']);
+        Route::get('/report/edcod/bs/{kodekec}', [ReportController::class, 'reportEdcodBs']);
+
         Route::get('/adminkab', [ReportController::class, 'index']);
         Route::get('/adminprov', [ReportController::class, 'index']);
         

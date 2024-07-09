@@ -46,12 +46,14 @@
                                     <label class="form-control-label">Pilih Level <span class="text-danger">*</span></label>
                                     <select id="level" name="level" class="form-control" data-toggle="select" required>
                                         <option value="0" disabled selected> -- Pilih Level -- </option>
-                                        <option value="kab">Progres Menurut Kabupaten</option>
-                                        <option value="bs">Progres Menurut BS</option>
+                                        <option value="kab">Progres Pencacahan Menurut Kabupaten</option>
+                                        <option value="bs">Progres Pencacahan Menurut BS</option>
                                         @hasrole('adminkab')
-                                        <option value="sample">Progres Menurut Sampel Ruta</option>
+                                        <option value="sample">Progres Pencacahan Menurut Sampel Ruta</option>
                                         @endhasrole
-                                        <option value="petugas">Progres Petugas</option>
+                                        <option value="petugas">Progres Pencacahan Petugas</option>
+                                        <option value="kab_edcod">Progres Edcod Menurut Kabupaten</option>
+                                        <option value="bs_edcod">Progres Edcod Menurut BS</option>
                                     </select>
                                     @error('level')
                                     <div class="text-valid mt-2">

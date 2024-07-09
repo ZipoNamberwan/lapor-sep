@@ -136,6 +136,7 @@
 
                             if (nextInput) {
                                 nextInput.focus();
+                                nextInput.select();
                             }
                         }
                     });

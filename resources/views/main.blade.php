@@ -103,13 +103,13 @@
 
                         @hasrole('adminkab|adminprov')
                         <li class="nav-item">
-                            <a class="nav-link @if((substr_count(url()->current(), 'edcod/input') == 1) || (substr_count(url()->current(), 'edcod/report') == 1)) active @endif" href="#navbar-components-2" data-toggle="collapse" role="button" aria-expanded="@if((substr_count(url()->current(), 'edcod/input') == 1) || (substr_count(url()->current(), 'edcod/report') == 1)) true @else false @endif" aria-controls="navbar-components-2">
+                            <a class="nav-link @if((substr_count(url()->current(), 'edcod/input') == 1) || (substr_count(url()->current(), 'report/edcod/kab') == 1)) active @endif" href="#navbar-components-2" data-toggle="collapse" role="button" aria-expanded="@if((substr_count(url()->current(), 'edcod/input') == 1) || (substr_count(url()->current(), 'report/edcod/kab') == 1)) true @else false @endif" aria-controls="navbar-components-2">
                                 <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                                     <i class="fas fa-edit text-warning text-sm opacity-10"></i>
                                 </div>
                                 <span class="nav-link-text">Editing Coding</span>
                             </a>
-                            <div class="collapse @if((substr_count(url()->current(), 'edcod/input') == 1) || (substr_count(url()->current(), 'edcod/report') == 1)) show @endif" id="navbar-components-2">
+                            <div class="collapse @if((substr_count(url()->current(), 'edcod/input') == 1) || (substr_count(url()->current(), 'report/edcod/kab') == 1)) show @endif" id="navbar-components-2">
                                 <ul class="nav nav-sm flex-column">
                                     @hasrole('adminkab')
                                     <li class="nav-item">
@@ -119,7 +119,7 @@
                                     </li>
                                     @endhasrole
                                     <li class="nav-item">
-                                        <a class="nav-link @if(substr_count(url()->current(), 'edcod/report') == 1) active @endif" href="/edcod/report">
+                                        <a class="nav-link @if(substr_count(url()->current(), 'report/edcod/kab') == 1) active @endif" href="/report/edcod/kab">
                                             <span class="nav-link-text ms-1">Report</span>
                                         </a>
                                     </li>

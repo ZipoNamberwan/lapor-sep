@@ -6,10 +6,12 @@ use App\Models\Bs;
 use App\Models\LastUpdate;
 use App\Models\Regency;
 use App\Models\ReportBs;
+use App\Models\ReportBsEdcod;
 use App\Models\ReportPetugas;
 use App\Models\ReportRegency;
+use App\Models\ReportRegencyEdcod;
 use App\Models\ReportSubdistrict;
-use App\Models\ReportVillage;
+use App\Models\ReportSubdistrictEdcod;
 use App\Models\Sample;
 use App\Models\Status;
 use App\Models\Subdistrict;
@@ -19,7 +21,6 @@ use DatePeriod;
 use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
@@ -50,7 +51,9 @@ class ReportController extends Controller
         $user = User::find(Auth::user()->id);
         $percentage = 0;
         $dates = [];
+        $dates_edcod = [];
         $data = [];
+        $data_edcod = [];
 
         $startDate = new DateTime('2024-06-01');
         // $endDate = new DateTime($today);
@@ -69,9 +72,29 @@ class ReportController extends Controller
             $dates[] = $date->format("Y-m-d");
         }
 
+        $startDate = new DateTime('2024-07-09');
+        $endDate = new DateTime($today);
+        // $endDate = new DateTime('2024-07-05');
+
+        // Include the end date in the loop
+        $endDate->modify('+1 day');
+
+        $period = new DatePeriod(
+            $startDate,
+            new DateInterval('P1D'),
+            $endDate
+        );
+
+        foreach ($period as $date) {
+            $dates_edcod[] = $date->format("Y-m-d");
+        }
+
         if ($user->hasRole('adminkab')) {
             $percentage = ReportRegency::where(['regency_long_code' => $user->regency->long_code])->where(['date' => $today])->first()->percentage;
             $data = ReportRegency::where(['regency_long_code' => $user->regency->long_code])->whereIn('date', $dates)->orderBy('date')->get()->pluck('percentage');
+
+            $percentage_edcod = ReportRegencyEdcod::where(['regency_long_code' => $user->regency->long_code])->where(['date' => $today])->first()->percentage;
+            $data_edcod = ReportRegencyEdcod::where(['regency_long_code' => $user->regency->long_code])->whereIn('date', $dates_edcod)->orderBy('date')->get()->pluck('percentage');
         } else {
             $success = ReportRegency::where(['date' => $today])->get()->pluck('success_sample')->sum();
             $total = ReportRegency::where(['date' => $today])->get()->pluck('total_sample')->sum();
@@ -90,8 +113,38 @@ class ReportController extends Controller
 
                 $data[] = $percentage;
             }
+
+
+            $success = ReportRegencyEdcod::where(['date' => $today])->get()->pluck('success_sample')->sum();
+            $total = ReportRegencyEdcod::where(['date' => $today])->get()->pluck('total_sample')->sum();
+            $percentage_edcod = 0;
+            if ($total != 0) {
+                $percentage_edcod = round($success / $total * 100, 2);
+            }
+
+            foreach ($dates_edcod as $date) {
+                $success = ReportRegencyEdcod::where(['date' => $date])->get()->pluck('success_sample')->sum();
+                $total = ReportRegencyEdcod::where(['date' => $date])->get()->pluck('total_sample')->sum();
+                $percentage_edcod = 0;
+                if ($total != 0) {
+                    $percentage_edcod = round($success / $total * 100, 2);
+                }
+
+                $data_edcod[] = $percentage_edcod;
+            }
         }
-        return view('report/index', ['lastUpdate' => $lastUpdate, 'percentage' => $percentage, 'dates' => $dates, 'data' => $data]);
+        return view(
+            'report/index',
+            [
+                'lastUpdate' => $lastUpdate,
+                'percentage' => $percentage,
+                'data' => $data,
+                'dates' => $dates,
+                'percentage_edcod' => $percentage_edcod,
+                'data_edcod' => $data_edcod,
+                'dates_edcod' => $dates_edcod,
+            ]
+        );
     }
 
     function reportKab()
@@ -155,6 +208,69 @@ class ReportController extends Controller
         }
 
         return view('report/reportbs', ['bs' => $bs, 'subdistrict' => $subdistrict, 'lastUpdate' => $lastUpdate]);
+    }
+
+    function reportEdcodKab()
+    {
+        $datetime = new DateTime();
+        $datetime->modify('+7 hours');
+        $today = $datetime->format('Y-m-d');
+
+        $regencies = ReportRegencyEdcod::where(['date' => $today])->orderBy('regency_short_code')->get();
+
+        $total_sample = ReportRegencyEdcod::where(['date' => $today])->get()->pluck('total_sample')->sum();
+        $success_sample = ReportRegencyEdcod::where(['date' => $today])->get()->pluck('success_sample')->sum();
+
+        $prov = 0;
+        if ($total_sample != 0) {
+            $prov = round($success_sample /
+                $total_sample * 100, 2);
+        }
+
+        $lastUpdate = LastUpdate::latest()->first();
+        if ($lastUpdate != null) {
+            $lastUpdate = $lastUpdate->created_at->addHours(7)->format('j M Y H:i');
+        } else {
+            $lastUpdate = '';
+        }
+
+        return view('report/edcod/reportkab', ['regencies' => $regencies, 'lastUpdate' => $lastUpdate, 'prov' => $prov]);
+    }
+
+    function reportEdcodKec($kodekab)
+    {
+        $datetime = new DateTime();
+        $datetime->modify('+7 hours');
+        $today = $datetime->format('Y-m-d');
+
+        $subdistricts = ReportSubdistrictEdcod::where(['date' => $today])->where(['regency_long_code' => $kodekab])->orderBy('subdistrict_short_code')->get();
+        $regency = Regency::where(['long_code' => $kodekab])->first();
+        $lastUpdate = LastUpdate::latest()->first();
+        if ($lastUpdate != null) {
+            $lastUpdate = $lastUpdate->created_at->addHours(7)->format('j M Y H:i');
+        } else {
+            $lastUpdate = '';
+        }
+
+        return view('report/edcod/reportkec', ['subdistricts' => $subdistricts, 'regency' => $regency, 'lastUpdate' => $lastUpdate]);
+    }
+
+    function reportEdcodBs($kodekec)
+    {
+        $datetime = new DateTime();
+        $datetime->modify('+7 hours');
+        $today = $datetime->format('Y-m-d');
+
+        $bs = ReportBsEdcod::where(['date' => $today])->where(['subdistrict_long_code' => $kodekec])->orderby('area_code')->get();
+        $subdistrict = Subdistrict::where(['long_code' => $kodekec])->first();
+        $lastUpdate = LastUpdate::latest()->first();
+        if ($lastUpdate != null) {
+            $lastUpdate = $lastUpdate->created_at->addHours(7)->format('j M Y H:i');
+        } else {
+            $lastUpdate = '';
+        }
+
+        return view('report/edcod/reportbs', ['bs' => $bs, 'subdistrict' => $subdistrict, 'lastUpdate' => $lastUpdate]);
     }
 
     function reportRuta($kodebs)
@@ -238,7 +354,7 @@ class ReportController extends Controller
             $spreadsheet = new Spreadsheet();
             $activeWorksheet = $spreadsheet->getActiveSheet();
 
-            $activeWorksheet->setCellValue('A1', 'Progres Pencacahan SEP');
+            $activeWorksheet->setCellValue('A1', 'Progres Editing Coding SEP');
             $activeWorksheet->mergeCells('A1:E1');
             $activeWorksheet->getStyle('A1')->applyFromArray([
                 'font' => [
@@ -408,7 +524,7 @@ class ReportController extends Controller
         } else if ($request->level == 'sample') {
             ini_set('memory_limit', '512M');
             ini_set('max_execution_time', 300);
-            
+
             $spreadsheet = new Spreadsheet();
             $activeWorksheet = $spreadsheet->getActiveSheet();
 
@@ -592,6 +708,177 @@ class ReportController extends Controller
 
             // Prepare the file for download
             $filename = 'Progres Petugas ' . $area . '.xlsx';
+
+            // Clear any output buffering
+            if (ob_get_contents()) {
+                ob_end_clean();
+            }
+
+            header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            header('Content-Disposition: attachment;filename="' . $filename . '"');
+            header('Cache-Control: max-age=0');
+
+            $writer->save('php://output');
+            exit;
+        } else if ($request->level == 'kab_edcod') {
+            $spreadsheet = new Spreadsheet();
+            $activeWorksheet = $spreadsheet->getActiveSheet();
+
+            $activeWorksheet->setCellValue('A1', 'Progres Editing Coding SEP');
+            $activeWorksheet->mergeCells('A1:E1');
+            $activeWorksheet->getStyle('A1')->applyFromArray([
+                'font' => [
+                    'bold' => true,
+                    'size' => 14,
+                ],
+                'alignment' => [
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                    'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+                ],
+            ]);
+
+            $activeWorksheet->setCellValue('A2', 'Data terakhir diupdate pada: ' . $lastUpdate->created_at->addHours(7)->format('j M Y H:i'));
+            $activeWorksheet->mergeCells('A2:E2');
+            $activeWorksheet->getStyle('A2')->applyFromArray([
+                'font' => [
+                    'size' => 8,
+                ],
+                'alignment' => [
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                ],
+            ]);
+
+            $startrow = 4;
+            $activeWorksheet->setCellValue('A' . $startrow, 'Kabupaten');
+            $activeWorksheet->setCellValue('B' . $startrow, 'Progres Editing Coding (Persen)');
+            $activeWorksheet->setCellValue('C' . $startrow, 'Sampel Berhasil Dicacah');
+            $activeWorksheet->setCellValue('D' . $startrow, 'Target Sampel');
+            $activeWorksheet->setCellValue('E' . $startrow, 'Kondisi sd Tanggal');
+            $activeWorksheet->getStyle('A' . $startrow . ':E' . $startrow)->applyFromArray([
+                'font' => [
+                    'bold' => true,
+                ],
+                'alignment' => [
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                    'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+                ],
+            ]);
+            $startrow++;
+
+            $rows = ReportRegencyEdcod::where(['date' => $today])->orderBy('regency_short_code')->get();
+
+            foreach ($rows as $row) {
+                $activeWorksheet->setCellValue('A' . $startrow, '[' . $row->regency_short_code . '] ' . $row->regency_name);
+                $activeWorksheet->setCellValue('B' . $startrow, $row->percentage);
+                $activeWorksheet->setCellValue('C' . $startrow, $row->success_sample);
+                $activeWorksheet->setCellValue('D' . $startrow, $row->total_sample);
+                $activeWorksheet->setCellValue('E' . $startrow, (new DateTime($row->date))->format('d M Y'));
+                $activeWorksheet->getStyle('B' . $startrow . ':E' . $startrow)->applyFromArray(['alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,],]);
+
+                $startrow++;
+            }
+
+            foreach (range('A', 'E') as $columnID) {
+                $activeWorksheet->getColumnDimension($columnID)->setAutoSize(true);
+            }
+
+            // Create a Writer to save the spreadsheet as an Excel file
+            $writer = new Xlsx($spreadsheet);
+
+            // Prepare the file for download
+            $filename = 'Progres Edcod Kabupaten.xlsx';
+
+            // Clear any output buffering
+            if (ob_get_contents()) {
+                ob_end_clean();
+            }
+
+            header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            header('Content-Disposition: attachment;filename="' . $filename . '"');
+            header('Cache-Control: max-age=0');
+
+            $writer->save('php://output');
+            exit;
+        } else if ($request->level == 'bs_edcod') {
+            $rows = null;
+
+            if ($user->hasRole('adminkab')) {
+                $rows = ReportBsEdcod::where(['regency_short_code' => $user->regency->short_code])->where(['date' => $today])->orderBy('area_code')->get();
+            } else if ($user->hasRole('adminprov')) {
+                $rows = ReportBsEdcod::where(['date' => $today])->orderBy('area_code')->get();
+            }
+
+            $spreadsheet = new Spreadsheet();
+            $activeWorksheet = $spreadsheet->getActiveSheet();
+
+            $activeWorksheet->setCellValue('A1', 'Progres Editing Coding SEP Menurut Blok Sensus di ' . $area);
+            $activeWorksheet->mergeCells('A1:H1');
+            $activeWorksheet->getStyle('A1')->applyFromArray([
+                'font' => [
+                    'bold' => true,
+                    'size' => 14,
+                ],
+                'alignment' => [
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                    'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+                ],
+            ]);
+
+            $activeWorksheet->setCellValue('A2', 'Data terakhir diupdate pada: ' . $lastUpdate->created_at->addHours(7)->format('j M Y H:i'));
+            $activeWorksheet->mergeCells('A2:H2');
+            $activeWorksheet->getStyle('A2')->applyFromArray([
+                'font' => [
+                    'size' => 8,
+                ],
+                'alignment' => [
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                ],
+            ]);
+
+            $startrow = 4;
+            $activeWorksheet->setCellValue('A' . $startrow, 'Kabupaten');
+            $activeWorksheet->setCellValue('B' . $startrow, 'Kecamatan');
+            $activeWorksheet->setCellValue('C' . $startrow, 'Desa');
+            $activeWorksheet->setCellValue('D' . $startrow, 'Blok Sensus');
+            $activeWorksheet->setCellValue('E' . $startrow, 'Progres Editing Coding (Persen)');
+            $activeWorksheet->setCellValue('F' . $startrow, 'Sampel Berhasil Dicacah');
+            $activeWorksheet->setCellValue('G' . $startrow, 'Target Sampel');
+            $activeWorksheet->setCellValue('H' . $startrow, 'Kondisi sd Tanggal');
+            $activeWorksheet->getStyle('A' . $startrow . ':H' . $startrow)->applyFromArray([
+                'font' => [
+                    'bold' => true,
+                ],
+                'alignment' => [
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                    'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+                ],
+            ]);
+            $startrow++;
+
+            foreach ($rows as $row) {
+                $activeWorksheet->setCellValue('A' . $startrow, '[' . $row->regency_short_code . '] ' . $row->regency_name);
+                $activeWorksheet->setCellValue('B' . $startrow, '[' . $row->subdistrict_short_code . '] ' . $row->subdistrict_name);
+                $activeWorksheet->setCellValue('C' . $startrow, '[' . $row->village_short_code . '] ' . $row->village_name);
+                $activeWorksheet->setCellValue('D' . $startrow, $row->short_code);
+
+                $activeWorksheet->setCellValue('E' . $startrow, $row->percentage);
+                $activeWorksheet->setCellValue('F' . $startrow, $row->success_sample);
+                $activeWorksheet->setCellValue('G' . $startrow, $row->total_sample);
+                $activeWorksheet->setCellValue('H' . $startrow, (new DateTime($row->date))->format('d M Y'));
+                $activeWorksheet->getStyle('E' . $startrow . ':H' . $startrow)->applyFromArray(['alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,],]);
+
+                $startrow++;
+            }
+
+            foreach (range('A', 'H') as $columnID) {
+                $activeWorksheet->getColumnDimension($columnID)->setAutoSize(true);
+            }
+
+            // Create a Writer to save the spreadsheet as an Excel file
+            $writer = new Xlsx($spreadsheet);
+
+            // Prepare the file for download
+            $filename = 'Progres BS ' . $area . '.xlsx';
 
             // Clear any output buffering
             if (ob_get_contents()) {

@@ -12,3 +12,30 @@ div.inline {
 .clearBoth {
     clear: both !important;
 }
+
+
+
+.tabs {
+    display: flex;
+}
+
+.tab-button {
+    background-color: #f1f1f1;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.tab-button.active,
+.tab-button:hover {
+    background-color: #ddd;
+}
+
+.tab-panel {
+    display: none;
+}
+
+.tab-panel.active {
+    display: block;
+}
