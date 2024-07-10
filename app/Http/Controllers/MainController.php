@@ -258,8 +258,12 @@ class MainController extends Controller
         $bsedcod = BsEdcod::find($id);
         $samples = Sample::where('bs_id', $bsedcod->bs->id)->where('status_id', '=', 9)->get();
 
-        if ($request->value > count($samples)) {
-            return response()->json(['error' => 'Sampel yg berhasil dicacah ' . count($samples)], 400);
+        // if ($request->value > count($samples)) {
+        //     return response()->json(['error' => 'Sampel yg berhasil dicacah ' . count($samples)], 400);
+        // }
+
+        if ($request->value > 20) {
+            return response()->json(['error' => 'Tidak Boleh Lebih Dari 20'], 400);
         }
 
         $response = $bsedcod->update([
